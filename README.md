@@ -132,4 +132,4 @@ Apache 2.0
 ---
 
 **Deadline: August 2, 2026.** Fines up to €35M or 7% of global annual turnover.
-<!-- mcp-name: io.github.airblackbox/air-blackbox -->
+<!-- mcp-name: io.github.shotwellj/air-blackbox -->

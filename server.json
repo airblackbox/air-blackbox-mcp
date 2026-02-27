@@ -1,17 +1,17 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.airblackbox/air-blackbox",
-  "description": "EU AI Act compliance scanner for Python AI agents — 10 tools for scanning, analyzing, and remediating LangChain/CrewAI/AutoGen/OpenAI code",
+  "name": "io.github.shotwellj/air-blackbox",
+  "description": "EU AI Act compliance scanner for Python AI agents — scan, analyze, and remediate",
   "repository": {
     "url": "https://github.com/airblackbox/air-blackbox-mcp",
     "source": "github"
   },
-  "version": "0.1.0",
+  "version": "0.1.2",
   "packages": [
     {
-      "registry_type": "pypi",
+      "registryType": "pypi",
       "identifier": "air-blackbox-mcp",
-      "version": "0.1.0",
+      "version": "0.1.2",
       "transport": {
         "type": "stdio"
       }

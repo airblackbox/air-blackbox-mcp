@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "air-blackbox-mcp"
-version = "0.1.1"
+version = "0.1.2"
 description = "MCP server for EU AI Act compliance scanning — scan, analyze, and remediate Python AI agents"
 readme = "README.md"
 license = "Apache-2.0"

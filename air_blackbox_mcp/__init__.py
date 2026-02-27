@@ -1,6 +1,6 @@
 """AIR Blackbox MCP Server — EU AI Act compliance scanning for AI agents."""
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 
 def main():
