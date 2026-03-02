@@ -1,5 +1,10 @@
 # AIR Blackbox MCP Server
 
+[![PyPI](https://img.shields.io/pypi/v/air-blackbox-mcp?color=blue&logo=pypi&logoColor=white)](https://pypi.org/project/air-blackbox-mcp/)
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)](https://python.org)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](https://github.com/airblackbox/air-blackbox-mcp/blob/main/LICENSE)
+[![MCP](https://img.shields.io/badge/MCP-compatible-green?logo=anthropic&logoColor=white)](https://modelcontextprotocol.io)
+
 EU AI Act compliance scanning for Python AI agents — directly in Claude Desktop, Cursor, or any MCP client.
 
 **10 tools** that scan, analyze, and fix compliance gaps across LangChain, CrewAI, AutoGen, OpenAI, and RAG pipelines.
@@ -17,7 +22,7 @@ pip install air-blackbox-mcp
 Open your Claude Desktop config file:
 
 - **Mac:** `~/Library/Application Support/Claude/claude_desktop_config.json`
-- **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+- **Windows:** `%APPDATA%\\Claude\\claude_desktop_config.json`
 
 Add this:
 
@@ -102,11 +107,11 @@ The `analyze_with_model` tool will automatically use it. Falls back to rule-base
 Fix compliance gaps with drop-in trust layers:
 
 ```bash
-pip install structured logging and validation    # LangChain / LangGraph
-pip install structured logging for CrewAI       # CrewAI
-pip install structured logging for AutoGen      # AutoGen / AG2
-pip install structured logging for OpenAI       # OpenAI Agents SDK
-pip install RAG input validation          # RAG pipelines
+pip install air-langchain-trust    # LangChain / LangGraph
+pip install air-crewai-trust       # CrewAI
+pip install air-autogen-trust      # AutoGen / AG2
+pip install air-anthropic-trust    # OpenAI Agents SDK
+pip install air-rag-trust          # RAG pipelines
 ```
 
 ## Development
@@ -121,6 +126,7 @@ python3 -m air_blackbox_mcp
 ## Links
 
 - **Website:** [airblackbox.ai](https://airblackbox.ai)
+- **Docs:** [docs.airblackbox.ai](https://docs.airblackbox.ai)
 - **GitHub:** [github.com/airblackbox](https://github.com/airblackbox)
 - **Scanner Demo:** [Hugging Face Space](https://huggingface.co/spaces/nostalgicskinco/air-blackbox-scanner)
 - **Gate (AI Firewall):** [airblackbox.ai/gate](https://airblackbox.ai/gate.html)
