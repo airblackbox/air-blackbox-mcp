@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-AIR Blackbox Dataset Merger
+EU AI Act compliance scanner Dataset Merger
 
 Combines v1 (540 examples) and v2 (342+ examples) into:
 1. training_data_combined.jsonl (all training examples, 90%)
@@ -16,7 +16,7 @@ from collections import defaultdict
 def merge_datasets():
     """Merge v1 and v2 datasets."""
     print("=" * 80)
-    print("AIR Blackbox Dataset Merger")
+    print("EU AI Act compliance scanner Dataset Merger")
     print("=" * 80)
     
     all_examples = []

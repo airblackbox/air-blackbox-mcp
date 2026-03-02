@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-AIR Blackbox Training Data Expansion Script
+EU AI Act compliance scanner Training Data Expansion Script
 
 Generates 500+ synthetic training examples for fine-tuning a Llama model
 to scan Python AI agent code for EU AI Act compliance.
@@ -209,19 +209,19 @@ ARTICLE_DESCRIPTIONS = {
 
 ARTICLE_COMPONENTS = {
     9: {
-        "compliant_pattern": "ConsentGate risk assessment",
-        "missing_component": "ConsentGate",
-        "what_to_add": "risk classification and ConsentGate consent layer"
+        "compliant_pattern": "risk classification system risk assessment",
+        "missing_component": "risk classification system",
+        "what_to_add": "risk classification and risk classification system consent layer"
     },
     10: {
-        "compliant_pattern": "DataVault PII protection",
-        "missing_component": "DataVault",
-        "what_to_add": "DataVault-based PII detection and encryption"
+        "compliant_pattern": "PII protection layer PII protection",
+        "missing_component": "PII protection layer",
+        "what_to_add": "PII protection layer-based PII detection and encryption"
     },
     11: {
-        "compliant_pattern": "AuditLedger structured logging",
-        "missing_component": "AuditLedger",
-        "what_to_add": "AuditLedger with model card and decision records"
+        "compliant_pattern": "structured audit logging structured logging",
+        "missing_component": "structured audit logging",
+        "what_to_add": "structured audit logging with model card and decision records"
     },
     12: {
         "compliant_pattern": "HMAC-SHA256 audit chain",
@@ -229,14 +229,14 @@ ARTICLE_COMPONENTS = {
         "what_to_add": "tamper-evident HMAC-SHA256 audit chain"
     },
     14: {
-        "compliant_pattern": "ConsentGate with HITL queue",
+        "compliant_pattern": "risk classification system with HITL queue",
         "missing_component": "human override",
         "what_to_add": "HITL queue and kill switch with human-in-the-loop"
     },
     15: {
-        "compliant_pattern": "InjectionDetector validation",
-        "missing_component": "InjectionDetector",
-        "what_to_add": "InjectionDetector for prompt injection protection"
+        "compliant_pattern": "prompt injection detection validation",
+        "missing_component": "prompt injection detection",
+        "what_to_add": "prompt injection detection for prompt injection protection"
     },
 }
 
@@ -254,28 +254,28 @@ TEMP_VALUES = ["0.0", "0.3", "0.7", "0.9"]
 
 FINDING_TEMPLATES = {
     "non_compliant": {
-        9: "FINDING: No risk classification or consent mechanism detected.\nARTICLE: 9\nSEVERITY: HIGH\nEVIDENCE: Lines {lines} show direct LLM invocation without ConsentGate.\nRECOMMENDATION: Add ConsentGate risk assessment and user consent layer.",
-        10: "FINDING: No PII protection or data governance detected.\nARTICLE: 10\nSEVERITY: CRITICAL\nEVIDENCE: Lines {lines} process user input without DataVault protection.\nRECOMMENDATION: Implement DataVault for PII detection and encryption.",
-        11: "FINDING: No structured audit logging or documentation.\nARTICLE: 11\nSEVERITY: HIGH\nEVIDENCE: Lines {lines} show tool execution without AuditLedger.\nRECOMMENDATION: Add AuditLedger with decision records and model cards.",
+        9: "FINDING: No risk classification or consent mechanism detected.\nARTICLE: 9\nSEVERITY: HIGH\nEVIDENCE: Lines {lines} show direct LLM invocation without risk classification system.\nRECOMMENDATION: Add risk classification system risk assessment and user consent layer.",
+        10: "FINDING: No PII protection or data governance detected.\nARTICLE: 10\nSEVERITY: CRITICAL\nEVIDENCE: Lines {lines} process user input without PII protection layer protection.\nRECOMMENDATION: Implement PII protection layer for PII detection and encryption.",
+        11: "FINDING: No structured audit logging or documentation.\nARTICLE: 11\nSEVERITY: HIGH\nEVIDENCE: Lines {lines} show tool execution without structured audit logging.\nRECOMMENDATION: Add structured audit logging with decision records and model cards.",
         12: "FINDING: No tamper-evident audit chain.\nARTICLE: 12\nSEVERITY: HIGH\nEVIDENCE: Lines {lines} lack HMAC-based audit logging.\nRECOMMENDATION: Implement HMAC-SHA256 chains for tamper-evident records.",
-        14: "FINDING: No human oversight or kill switch.\nARTICLE: 14\nSEVERITY: HIGH\nEVIDENCE: Lines {lines} show autonomous execution without HITL.\nRECOMMENDATION: Add ConsentGate with HITL queue and emergency kill switch.",
-        15: "FINDING: No input validation or injection detection.\nARTICLE: 15\nSEVERITY: CRITICAL\nEVIDENCE: Lines {lines} accept user input without sanitization.\nRECOMMENDATION: Deploy InjectionDetector for prompt injection protection.",
+        14: "FINDING: No human oversight or kill switch.\nARTICLE: 14\nSEVERITY: HIGH\nEVIDENCE: Lines {lines} show autonomous execution without HITL.\nRECOMMENDATION: Add risk classification system with HITL queue and emergency kill switch.",
+        15: "FINDING: No input validation or injection detection.\nARTICLE: 15\nSEVERITY: CRITICAL\nEVIDENCE: Lines {lines} accept user input without sanitization.\nRECOMMENDATION: Deploy prompt injection detection for prompt injection protection.",
     },
     "partially_compliant": {
-        9: "FINDING: Partial risk assessment - missing consent mechanism.\nARTICLE: 9\nSEVERITY: MEDIUM\nEVIDENCE: Lines {lines} classify risk but lack user consent flow.\nRECOMMENDATION: Complete ConsentGate integration with user approval.",
-        10: "FINDING: Partial PII handling - encryption missing.\nARTICLE: 10\nSEVERITY: MEDIUM\nEVIDENCE: Lines {lines} detect PII but don't encrypt sensitive data.\nRECOMMENDATION: Add encryption layer to DataVault protection.",
-        11: "FINDING: Partial documentation - missing decision records.\nARTICLE: 11\nSEVERITY: MEDIUM\nEVIDENCE: Lines {lines} log actions but lack structured decision info.\nRECOMMENDATION: Enhance AuditLedger with complete decision records.",
+        9: "FINDING: Partial risk assessment - missing consent mechanism.\nARTICLE: 9\nSEVERITY: MEDIUM\nEVIDENCE: Lines {lines} classify risk but lack user consent flow.\nRECOMMENDATION: Complete risk classification system integration with user approval.",
+        10: "FINDING: Partial PII handling - encryption missing.\nARTICLE: 10\nSEVERITY: MEDIUM\nEVIDENCE: Lines {lines} detect PII but don't encrypt sensitive data.\nRECOMMENDATION: Add encryption layer to PII protection layer protection.",
+        11: "FINDING: Partial documentation - missing decision records.\nARTICLE: 11\nSEVERITY: MEDIUM\nEVIDENCE: Lines {lines} log actions but lack structured decision info.\nRECOMMENDATION: Enhance structured audit logging with complete decision records.",
         12: "FINDING: Partial audit logging - HMAC chain incomplete.\nARTICLE: 12\nSEVERITY: MEDIUM\nEVIDENCE: Lines {lines} log events but lack cryptographic integrity.\nRECOMMENDATION: Complete HMAC-SHA256 chain implementation.",
         14: "FINDING: Partial oversight - kill switch missing.\nARTICLE: 14\nSEVERITY: MEDIUM\nEVIDENCE: Lines {lines} have review queue but no emergency stop.\nRECOMMENDATION: Add kill switch capability to HITL system.",
-        15: "FINDING: Partial validation - coverage gaps detected.\nARTICLE: 15\nSEVERITY: MEDIUM\nEVIDENCE: Lines {lines} validate some inputs but miss edge cases.\nRECOMMENDATION: Expand InjectionDetector coverage to all inputs.",
+        15: "FINDING: Partial validation - coverage gaps detected.\nARTICLE: 15\nSEVERITY: MEDIUM\nEVIDENCE: Lines {lines} validate some inputs but miss edge cases.\nRECOMMENDATION: Expand prompt injection detection coverage to all inputs.",
     },
     "compliant": {
-        9: "PASS: Article 9 compliant - ConsentGate risk assessment active.\nARTICLE: 9\nEVIDENCE: Lines {lines} show risk classification and user consent.\nNOTE: All high-risk operations require explicit user approval.",
-        10: "PASS: Article 10 compliant - DataVault PII protection active.\nARTICLE: 10\nEVIDENCE: Lines {lines} encrypt sensitive data and enforce governance.\nNOTE: PII detection and encryption verified.",
-        11: "PASS: Article 11 compliant - AuditLedger documentation active.\nARTICLE: 11\nEVIDENCE: Lines {lines} record decisions with full context.\nNOTE: Model cards and decision trees documented.",
+        9: "PASS: Article 9 compliant - risk classification system risk assessment active.\nARTICLE: 9\nEVIDENCE: Lines {lines} show risk classification and user consent.\nNOTE: All high-risk operations require explicit user approval.",
+        10: "PASS: Article 10 compliant - PII protection layer PII protection active.\nARTICLE: 10\nEVIDENCE: Lines {lines} encrypt sensitive data and enforce governance.\nNOTE: PII detection and encryption verified.",
+        11: "PASS: Article 11 compliant - structured audit logging documentation active.\nARTICLE: 11\nEVIDENCE: Lines {lines} record decisions with full context.\nNOTE: Model cards and decision trees documented.",
         12: "PASS: Article 12 compliant - HMAC audit chain active.\nARTICLE: 12\nEVIDENCE: Lines {lines} maintain tamper-evident logs.\nNOTE: Cryptographic integrity verified via HMAC-SHA256.",
         14: "PASS: Article 14 compliant - HITL with kill switch active.\nARTICLE: 14\nEVIDENCE: Lines {lines} show human review queue and emergency stop.\nNOTE: All critical decisions require human approval.",
-        15: "PASS: Article 15 compliant - InjectionDetector active.\nARTICLE: 15\nEVIDENCE: Lines {lines} detect and block prompt injections.\nNOTE: Input validation covers 15 injection patterns.",
+        15: "PASS: Article 15 compliant - prompt injection detection active.\nARTICLE: 15\nEVIDENCE: Lines {lines} detect and block prompt injections.\nNOTE: Input validation covers 15 injection patterns.",
     },
 }
 
@@ -358,7 +358,7 @@ def generate_training_example(framework, article, compliance_state):
 def main():
     """Generate training data."""
     print("=" * 80)
-    print("AIR Blackbox Training Data Expansion Script")
+    print("EU AI Act compliance scanner Training Data Expansion Script")
     print("=" * 80)
     
     frameworks = list(TEMPLATES.keys())  # ["langchain", "crewai", "autogen", "openai", "rag"]

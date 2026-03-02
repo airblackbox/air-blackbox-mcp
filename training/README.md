@@ -1,8 +1,8 @@
-# AIR Blackbox Training Data Generation
+# EU AI Act compliance scanner Training Data Generation
 
 ## Overview
 
-This directory contains the training data generation pipeline for AIR Blackbox's fine-tuned compliance model. The `generate_training_data.py` script generates **540+ synthetic training examples** for fine-tuning a Llama model to detect EU AI Act compliance issues in Python AI agent code.
+This directory contains the training data generation pipeline for EU AI Act compliance scanner's fine-tuned compliance model. The `generate_training_data.py` script generates **540+ synthetic training examples** for fine-tuning a Llama model to detect EU AI Act compliance issues in Python AI agent code.
 
 ## Generated Datasets
 
@@ -58,7 +58,7 @@ Each training example is a JSON object with the following structure:
 - **RAG**: Vector stores and retrieval patterns
 
 ### Compliance States (3 total)
-- **Non-compliant**: Missing required AIR Blackbox component
+- **Non-compliant**: Missing required EU AI Act compliance scanner component
 - **Partially compliant**: Has some but not complete implementation
 - **Fully compliant**: Complete AIR trust layer integration
 
@@ -142,18 +142,18 @@ For each framework:
 
 Total combinations: 5 × 6 × 3 × 6 = **540 examples**
 
-## AIR Blackbox Components Referenced
+## EU AI Act compliance scanner Components Referenced
 
-The training examples reference these AIR Blackbox trust layers:
+The training examples reference these EU AI Act compliance scanner trust layers:
 
 | Article | Component | Purpose |
 |---------|-----------|---------|
-| 9 | ConsentGate | Risk classification + user consent |
-| 10 | DataVault | PII detection + encryption |
-| 11 | AuditLedger | Decision records + model cards |
+| 9 | risk classification system | Risk classification + user consent |
+| 10 | PII protection layer | PII detection + encryption |
+| 11 | structured audit logging | Decision records + model cards |
 | 12 | HMAC audit chain | Tamper-evident logging |
 | 14 | HITL + kill switch | Human-in-the-loop + emergency stop |
-| 15 | InjectionDetector | Prompt injection protection |
+| 15 | prompt injection detection | Prompt injection protection |
 
 ## Fine-Tuning Integration
 

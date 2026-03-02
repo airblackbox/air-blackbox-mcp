@@ -1,0 +1,127 @@
+{
+  "timestamp": 1772257897.404393,
+  "num_examples": 54,
+  "rule_based_metrics": {
+    "overall_accuracy": 0.074,
+    "severity_accuracy": 0.2,
+    "compliance_accuracy": 0.074
+  },
+  "per_article_metrics": {
+    "9": {
+      "accuracy": 0.0,
+      "precision": 0,
+      "recall": 0.0,
+      "f1": 0,
+      "count": 13
+    },
+    "10": {
+      "accuracy": 0.0,
+      "precision": 0,
+      "recall": 0.0,
+      "f1": 0,
+      "count": 12
+    },
+    "11": {
+      "accuracy": 0.0,
+      "precision": 0,
+      "recall": 0.0,
+      "f1": 0,
+      "count": 8
+    },
+    "12": {
+      "accuracy": 1.0,
+      "precision": 0.167,
+      "recall": 1.0,
+      "f1": 0.286,
+      "count": 4
+    },
+    "14": {
+      "accuracy": 0.0,
+      "precision": 0,
+      "recall": 0.0,
+      "f1": 0,
+      "count": 7
+    },
+    "15": {
+      "accuracy": 0.0,
+      "precision": 0,
+      "recall": 0.0,
+      "f1": 0,
+      "count": 10
+    }
+  },
+  "framework_accuracy": {
+    "langchain": {
+      "correct": 0,
+      "total": 10
+    },
+    "autogen": {
+      "correct": 1,
+      "total": 12
+    },
+    "rag": {
+      "correct": 1,
+      "total": 10
+    },
+    "openai": {
+      "correct": 2,
+      "total": 13
+    },
+    "crewai": {
+      "correct": 0,
+      "total": 9
+    }
+  },
+  "confusion_matrix": {
+    "14": {
+      "12": 7,
+      "9": 0,
+      "10": 0,
+      "11": 0,
+      "14": 0,
+      "15": 0
+    },
+    "10": {
+      "12": 12,
+      "9": 0,
+      "10": 0,
+      "11": 0,
+      "14": 0,
+      "15": 0
+    },
+    "9": {
+      "12": 13,
+      "9": 0,
+      "10": 0,
+      "11": 0,
+      "14": 0,
+      "15": 0
+    },
+    "15": {
+      "12": 10,
+      "9": 0,
+      "10": 0,
+      "11": 0,
+      "14": 0,
+      "15": 0
+    },
+    "11": {
+      "12": 8,
+      "9": 0,
+      "10": 0,
+      "11": 0,
+      "14": 0,
+      "15": 0
+    },
+    "12": {
+      "12": 4,
+      "9": 0,
+      "10": 0,
+      "11": 0,
+      "14": 0,
+      "15": 0
+    }
+  },
+  "avg_scan_time_ms": 0.38135493243182145,
+  "ollama_available": true
+}

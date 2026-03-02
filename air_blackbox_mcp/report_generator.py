@@ -1,5 +1,5 @@
 """
-AIR Blackbox Compliance Report Generator
+EU AI Act Compliance Report Generator
 
 Produces professional HTML and Markdown compliance reports from scan results.
 Reports cover EU AI Act Articles 9-15 with detailed remediation guidance.
@@ -12,7 +12,7 @@ from dataclasses import dataclass
 
 
 DEADLINE_DATE = date(2026, 8, 2)
-AIR_VERSION = "1.0.0"
+SCANNER_VERSION = "1.0.0"
 ORANGE_ACCENT = "#f97316"
 DARK_BG = "#0a0a0a"
 
@@ -119,7 +119,7 @@ def generate_compliance_report_md(
     report = []
     
     # Header
-    report.append("# AIR Blackbox — EU AI Act Compliance Report")
+    report.append("# EU AI Act Compliance Report")
     report.append("")
     report.append(f"**Generated:** {generated_at}")
     report.append(f"**Framework:** {metrics.framework}")
@@ -230,12 +230,12 @@ def generate_compliance_report_md(
     report.append(
         "This report checks technical requirements for EU AI Act compliance. "
         "It is not legal advice. Consult with legal counsel for authoritative guidance. "
-        "AIR Blackbox detects AIR-based trust layers but does not provide legal interpretation."
+        "This scanner detects compliance patterns but does not provide legal interpretation."
     )
     report.append("")
     
     # Footer
-    report.append(f"**AIR Blackbox v{AIR_VERSION}** | Report generated {generated_at}")
+    report.append(f"**EU AI Act Scanner v{SCANNER_VERSION}** | Report generated {generated_at}")
     
     return "\n".join(report)
 
@@ -282,7 +282,7 @@ def generate_compliance_report_html(
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AIR Blackbox Compliance Report</title>
+    <title>EU AI Act Compliance Report</title>
     <style>
         * {
             margin: 0;
@@ -689,7 +689,7 @@ def generate_compliance_report_html(
 <body>
     <div class="container">
         <header>
-            <h1>AIR Blackbox</h1>
+            <h1>EU AI Act Compliance</h1>
             <h2 style="border: none; margin: 0; font-size: 1rem; color: #a1a1a1; padding-left: 0; margin-top: 10px;">
                 EU AI Act Compliance Report
             </h2>
@@ -915,14 +915,14 @@ def generate_compliance_report_html(
             <div class="disclaimer">
                 <p>
                     This report checks technical requirements for EU AI Act compliance. It is not legal advice.
-                    Consult with legal counsel for authoritative guidance. AIR Blackbox detects AIR-based trust
-                    layers but does not provide legal interpretation.
+                    Consult with legal counsel for authoritative guidance. This scanner detects compliance
+                    patterns but does not provide legal interpretation.
                 </p>
             </div>
         </section>
         
         <footer>
-            <p><strong>AIR Blackbox v{AIR_VERSION}</strong> | Report generated {generated_at}</p>
+            <p><strong>EU AI Act Scanner v{SCANNER_VERSION}</strong> | Report generated {generated_at}</p>
         </footer>
     </div>
     
@@ -967,12 +967,12 @@ if __name__ == "__main__":
     # Example usage
     example_scan = {
         "framework": "langchain",
-        "trust_layers": {"air_langchain_trust": True},
+        "trust_layers": {"structured_logging": True},
         "trust_components": {
-            "ConsentGate": True,
-            "AuditLedger": False,
-            "RiskClassifier": True,
-            "DataShredder": False
+            "risk_classification": True,
+            "audit_logging": False,
+            "pii_protection": True,
+            "injection_detection": False
         },
         "compliance_score": "4/6",
         "passed": 4,
@@ -983,7 +983,7 @@ if __name__ == "__main__":
                 "title": "Risk Management System",
                 "passed": True,
                 "severity": "HIGH",
-                "finding": "ConsentGate detected with risk classification",
+                "finding": "Risk classification system detected",
                 "fix": None
             },
             {
@@ -992,7 +992,7 @@ if __name__ == "__main__":
                 "passed": False,
                 "severity": "CRITICAL",
                 "finding": "No HMAC-SHA256 audit chain detected",
-                "fix": "Add AuditLedger from air-langchain-trust for tamper-evident logging"
+                "fix": "Add HMAC-SHA256 tamper-evident audit logging"
             },
             {
                 "article": 11,
@@ -1016,7 +1016,7 @@ if __name__ == "__main__":
                 "passed": False,
                 "severity": "HIGH",
                 "finding": "No continuous monitoring system detected",
-                "fix": "Implement DataShredder and continuous audit logging"
+                "fix": "Implement continuous monitoring and audit logging"
             },
             {
                 "article": 15,
@@ -1024,10 +1024,10 @@ if __name__ == "__main__":
                 "passed": False,
                 "severity": "CRITICAL",
                 "finding": "No incident reporting mechanism found",
-                "fix": "Add incident logging to AuditLedger with alert thresholds"
+                "fix": "Add incident logging with alert thresholds"
             }
         ],
-        "install_command": "pip install air-langchain-trust",
+        "install_command": "pip install structlog pydantic",
         "deadline": "August 2, 2026"
     }
     

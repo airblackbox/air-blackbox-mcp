@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Evaluation benchmark for AIR Blackbox compliance model.
+Evaluation benchmark for EU AI Act compliance scanner compliance model.
 
 Loads eval_data.jsonl and tests against:
 1. Rule-based scanner (baseline)
@@ -309,7 +309,7 @@ def run_evaluation(eval_file, use_ollama=True, test_mode=False):
         test_mode: If True, only evaluate first 10 examples for quick testing
     """
     print("=" * 70)
-    print("AIR Blackbox Evaluation Benchmark")
+    print("EU AI Act compliance scanner Evaluation Benchmark")
     if test_mode:
         print("(TEST MODE - limited to 10 examples)")
     print("=" * 70)
@@ -450,7 +450,7 @@ if __name__ == "__main__":
     import argparse
     
     parser = argparse.ArgumentParser(
-        description="Evaluate AIR Blackbox compliance scanner"
+        description="Evaluate EU AI Act compliance scanner compliance scanner"
     )
     parser.add_argument(
         "--eval-file",

@@ -1,5 +1,5 @@
 """
-OpenTelemetry instrumentation for AIR Blackbox compliance scanning.
+OpenTelemetry instrumentation for EU AI Act Compliance Scanner compliance scanning.
 
 Follows OpenTelemetry GenAI SIG semantic conventions for generative AI
 applications. Instruments scan operations, trust layer events, and model
@@ -117,7 +117,7 @@ class NoOpGauge:
 
 class AirTelemetry:
     """
-    Singleton telemetry wrapper for AIR Blackbox compliance scanning.
+    Singleton telemetry wrapper for EU AI Act Compliance Scanner compliance scanning.
     
     Initializes OpenTelemetry TracerProvider and MeterProvider if packages
     are available. Gracefully degrades to no-ops if OTel is not installed.
@@ -137,7 +137,7 @@ class AirTelemetry:
     
     def __init__(self, service_name: str = "air-blackbox", enable: bool = True):
         """
-        Initialize OTel instrumentation for AIR Blackbox.
+        Initialize OTel instrumentation for EU AI Act Compliance Scanner.
         
         Args:
             service_name: Service name for resource attributes
@@ -207,7 +207,7 @@ class AirTelemetry:
     
     @staticmethod
     def _get_package_version() -> str:
-        """Get AIR Blackbox package version."""
+        """Get EU AI Act Compliance Scanner package version."""
         try:
             import pkg_resources
             return pkg_resources.get_distribution("air-blackbox").version

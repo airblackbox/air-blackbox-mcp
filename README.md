@@ -80,12 +80,12 @@ The AIR Blackbox tools will appear in Claude's tool list.
 
 | Article | Requirement | AIR Component |
 |---------|------------|---------------|
-| 9 | Risk Management | ConsentGate |
-| 10 | Data Governance | DataVault |
-| 11 | Technical Documentation | AuditLedger |
-| 12 | Record-Keeping (tamper-evident) | AuditLedger (HMAC-SHA256) |
-| 14 | Human Oversight | ConsentGate |
-| 15 | Robustness & Cybersecurity | InjectionDetector |
+| 9 | Risk Management | Risk classification |
+| 10 | Data Governance | PII protection |
+| 11 | Technical Documentation | Structured audit logging |
+| 12 | Record-Keeping (tamper-evident) | Structured audit logging (HMAC-SHA256) |
+| 14 | Human Oversight | Risk classification |
+| 15 | Robustness & Cybersecurity | Prompt injection detection |
 
 ## Optional: Local AI Model
 
@@ -102,11 +102,11 @@ The `analyze_with_model` tool will automatically use it. Falls back to rule-base
 Fix compliance gaps with drop-in trust layers:
 
 ```bash
-pip install air-langchain-trust    # LangChain / LangGraph
-pip install air-crewai-trust       # CrewAI
-pip install air-autogen-trust      # AutoGen / AG2
-pip install air-openai-trust       # OpenAI Agents SDK
-pip install air-rag-trust          # RAG pipelines
+pip install structured logging and validation    # LangChain / LangGraph
+pip install structured logging for CrewAI       # CrewAI
+pip install structured logging for AutoGen      # AutoGen / AG2
+pip install structured logging for OpenAI       # OpenAI Agents SDK
+pip install RAG input validation          # RAG pipelines
 ```
 
 ## Development

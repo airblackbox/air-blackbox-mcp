@@ -1,0 +1,164 @@
+================================================================================
+AIR BLACKBOX TRAINING DATA EXPANSION - FILE MANIFEST
+================================================================================
+
+LOCATION: /Users/jasonshotwell/Desktop/air-blackbox-mcp/training/
+
+GENERATOR SCRIPTS (Python):
+├── generate_training_data.py
+│   └── Original V1 generator (540 examples)
+│       Frameworks: LangChain, CrewAI, AutoGen, OpenAI, RAG
+│       Strategy: 5 frameworks × 6 articles × 3 states × 6 variations
+│
+├── generate_training_data_v2.py
+│   └── V2 expansion generator (342 examples)
+│       Added: Anthropic + expanded templates + edge cases
+│       Strategy: Diverse patterns for 1,000+ target
+│
+└── merge_datasets.py
+    └── Combines V1 + V2 into final dataset
+        Outputs: training_data_combined.jsonl + eval_data_combined.jsonl
+        Statistics: Full distribution analysis
+
+DATA FILES (JSONL format):
+
+V1 Original:
+├── training_data_expanded.jsonl         (486 examples, 90%)
+└── eval_data.jsonl                      (54 examples, 10%)
+    └── Total V1: 540 examples
+
+V2 Expansion:
+├── training_data_v2.jsonl               (307 examples, 90%)
+└── eval_data_v2.jsonl                   (35 examples, 10%)
+    └── Total V2: 342 examples
+
+COMBINED FINAL (✓ FOR PRODUCTION):
+├── training_data_combined.jsonl         (793 examples, 90%) ← USE THIS
+└── eval_data_combined.jsonl             (89 examples, 10%)  ← USE THIS
+    └── Total Combined: 882 examples
+
+DOCUMENTATION:
+├── README_EXPANSION.md          (Detailed expansion documentation)
+├── EXPANSION_SUMMARY.txt        (Completion summary & checklist)
+├── MANIFEST.txt                 (This file)
+├── README.md                    (Original project documentation)
+└── EVAL_README.md               (Evaluation documentation)
+
+================================================================================
+QUICK STATS
+================================================================================
+
+Original (V1):          540 examples
+Expansion (V2):         342 examples
+Combined (FINAL):       882 examples
+Growth:                 +63%
+
+Training/Eval:          793/89 (90/10 split)
+Frameworks:             14 patterns (5 original + 6 new + 3 edge cases)
+Articles:               6 (all EU AI Act articles)
+Compliance States:      3 (non-compliant, partial, compliant)
+
+Files Ready:            ✓ training_data_combined.jsonl
+                        ✓ eval_data_combined.jsonl
+
+================================================================================
+HOW TO USE
+================================================================================
+
+1. Fine-tune your model:
+   python fine_tune_llama.py \
+     --train_file training_data_combined.jsonl \
+     --eval_file eval_data_combined.jsonl
+
+2. Evaluate results:
+   python evaluate.py \
+     --eval_file eval_data_combined.jsonl \
+     --model your_finetuned_model
+
+3. Regenerate (if needed):
+   python generate_training_data_v2.py
+   python merge_datasets.py
+
+================================================================================
+FILE SIZES
+================================================================================
+
+Scripts:
+  generate_training_data.py        ~21 KB
+  generate_training_data_v2.py     ~37 KB
+  merge_datasets.py                ~8.4 KB
+
+Data:
+  training_data_combined.jsonl     ~637 KB (793 examples)
+  eval_data_combined.jsonl         ~71 KB  (89 examples)
+
+Documentation:
+  README_EXPANSION.md              ~9.3 KB
+  EXPANSION_SUMMARY.txt            ~11 KB
+  MANIFEST.txt                     ~3 KB
+
+================================================================================
+WHAT'S NEW IN V2
+================================================================================
+
+✓ Anthropic Claude Agent SDK framework (NEW)
+  - basic_agent
+  - multi_agent_handoff
+  - agent_with_mcp_tools
+  - agent_with_guardrails
+
+✓ Expanded existing frameworks with NEW templates:
+  - LangChain: LCEL chains, structured output, multimodal, streaming
+  - CrewAI: Sequential, hierarchical, with memory
+  - AutoGen: Nested chat, tool use, code executor
+  - OpenAI: Streaming, batch API, structured outputs
+  - RAG: Multi-retriever, hybrid search, reranking
+
+✓ Edge case patterns (NEW):
+  - Partial compliance: Incomplete safety implementations
+  - Mixed frameworks: Real-world integration scenarios
+  - Obfuscated code: Minified, eval-based, dynamic imports
+
+================================================================================
+VERIFICATION COMMANDS
+================================================================================
+
+Count examples:
+  wc -l training_data_combined.jsonl eval_data_combined.jsonl
+
+Verify format:
+  head -1 training_data_combined.jsonl | python -m json.tool
+
+Count by article:
+  jq '.metadata.article' training_data_combined.jsonl | sort | uniq -c
+
+Count by framework:
+  jq '.metadata.framework' training_data_combined.jsonl | sort | uniq -c
+
+Count by compliance state:
+  jq '.metadata.compliance_state' training_data_combined.jsonl | sort | uniq -c
+
+================================================================================
+REPRODUCIBILITY
+================================================================================
+
+V1 Generator: random.seed(42)
+V2 Generator: random.seed(43)
+Merger:       random.seed(100)
+
+All examples are reproducible with the same seed values.
+No randomness in the actual data - only in template selection.
+
+================================================================================
+NEXT STEPS
+================================================================================
+
+1. Fine-tune model with training_data_combined.jsonl
+2. Evaluate on eval_data_combined.jsonl
+3. Validate improvements across all 6 articles
+4. Deploy updated scanner to production
+5. Monitor real-world performance
+
+================================================================================
+STATUS: ✓ EXPANSION COMPLETE - READY FOR PRODUCTION
+================================================================================

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-AIR Blackbox Training Data v2 - Extended Examples
+EU AI Act compliance scanner Training Data v2 - Extended Examples
 
 Generates 500+ ADDITIONAL synthetic training examples for fine-tuning a Llama model
 to scan Python AI agent code for EU AI Act compliance.
@@ -445,36 +445,36 @@ ARTICLE_DESCRIPTIONS = {
 # Enhanced findings for edge case patterns
 FINDING_TEMPLATES_V2 = {
     "anthropic_non_compliant": {
-        9: "FINDING: Anthropic agent lacks risk classification.\\nARTICLE: 9\\nSEVERITY: HIGH\\nEVIDENCE: Lines {lines} show unguarded agent invocation without ConsentGate.\\nRECOMMENDATION: Integrate ConsentGate risk scoring and consent flow.",
-        10: "FINDING: Anthropic agent processes input without PII protection.\\nARTICLE: 10\\nSEVERITY: CRITICAL\\nEVIDENCE: Lines {lines} pass user data directly to API.\\nRECOMMENDATION: Wrap with DataVault for PII detection and encryption.",
-        11: "FINDING: Agent execution lacks structured decision documentation.\\nARTICLE: 11\\nSEVERITY: HIGH\\nEVIDENCE: Lines {lines} have no AuditLedger integration.\\nRECOMMENDATION: Add decision record and model card documentation.",
+        9: "FINDING: Anthropic agent lacks risk classification.\\nARTICLE: 9\\nSEVERITY: HIGH\\nEVIDENCE: Lines {lines} show unguarded agent invocation without risk classification system.\\nRECOMMENDATION: Integrate risk classification system risk scoring and consent flow.",
+        10: "FINDING: Anthropic agent processes input without PII protection.\\nARTICLE: 10\\nSEVERITY: CRITICAL\\nEVIDENCE: Lines {lines} pass user data directly to API.\\nRECOMMENDATION: Wrap with PII protection layer for PII detection and encryption.",
+        11: "FINDING: Agent execution lacks structured decision documentation.\\nARTICLE: 11\\nSEVERITY: HIGH\\nEVIDENCE: Lines {lines} have no structured audit logging integration.\\nRECOMMENDATION: Add decision record and model card documentation.",
         12: "FINDING: No tamper-evident audit trail for agent decisions.\\nARTICLE: 12\\nSEVERITY: HIGH\\nEVIDENCE: Lines {lines} lack HMAC-SHA256 chain.\\nRECOMMENDATION: Implement cryptographic audit logging with HMAC.",
         14: "FINDING: Agent executes without human oversight.\\nARTICLE: 14\\nSEVERITY: HIGH\\nEVIDENCE: Lines {lines} show autonomous execution without HITL.\\nRECOMMENDATION: Add HITL queue and emergency kill switch.",
-        15: "FINDING: Agent input validation missing injection detection.\\nARTICLE: 15\\nSEVERITY: CRITICAL\\nEVIDENCE: Lines {lines} accept user input without InjectionDetector.\\nRECOMMENDATION: Deploy InjectionDetector for prompt injection protection.",
+        15: "FINDING: Agent input validation missing injection detection.\\nARTICLE: 15\\nSEVERITY: CRITICAL\\nEVIDENCE: Lines {lines} accept user input without prompt injection detection.\\nRECOMMENDATION: Deploy prompt injection detection for prompt injection protection.",
     },
     "partial_compliance": {
-        9: "FINDING: Code has logging but missing risk classification.\\nARTICLE: 9\\nSEVERITY: MEDIUM\\nEVIDENCE: Lines {lines} log events but lack ConsentGate risk assessment.\\nRECOMMENDATION: Complete implementation with risk classification and user consent.",
-        10: "FINDING: Code validates input length but no PII detection.\\nARTICLE: 10\\nSEVERITY: MEDIUM\\nEVIDENCE: Lines {lines} have input validation but miss DataVault integration.\\nRECOMMENDATION: Add PII detection and encryption to security layer.",
-        11: "FINDING: Code has error handling but incomplete documentation.\\nARTICLE: 11\\nSEVERITY: MEDIUM\\nEVIDENCE: Lines {lines} catch errors but lack AuditLedger decision records.\\nRECOMMENDATION: Add structured logging with decision context and model cards.",
+        9: "FINDING: Code has logging but missing risk classification.\\nARTICLE: 9\\nSEVERITY: MEDIUM\\nEVIDENCE: Lines {lines} log events but lack risk classification system risk assessment.\\nRECOMMENDATION: Complete implementation with risk classification and user consent.",
+        10: "FINDING: Code validates input length but no PII detection.\\nARTICLE: 10\\nSEVERITY: MEDIUM\\nEVIDENCE: Lines {lines} have input validation but miss PII protection layer integration.\\nRECOMMENDATION: Add PII detection and encryption to security layer.",
+        11: "FINDING: Code has error handling but incomplete documentation.\\nARTICLE: 11\\nSEVERITY: MEDIUM\\nEVIDENCE: Lines {lines} catch errors but lack structured audit logging decision records.\\nRECOMMENDATION: Add structured logging with decision context and model cards.",
         12: "FINDING: Code logs events but lacks cryptographic integrity.\\nARTICLE: 12\\nSEVERITY: MEDIUM\\nEVIDENCE: Lines {lines} have basic logging without HMAC chain.\\nRECOMMENDATION: Upgrade to HMAC-SHA256 tamper-evident audit logs.",
         14: "FINDING: Code has input validation but no human override.\\nARTICLE: 14\\nSEVERITY: MEDIUM\\nEVIDENCE: Lines {lines} validate input but lack HITL and kill switch.\\nRECOMMENDATION: Add human-in-the-loop approval and emergency stop.",
-        15: "FINDING: Code validates length but misses injection patterns.\\nARTICLE: 15\\nSEVERITY: MEDIUM\\nEVIDENCE: Lines {lines} have regex validation but incomplete InjectionDetector.\\nRECOMMENDATION: Expand validation to cover 15 injection attack patterns.",
+        15: "FINDING: Code validates length but misses injection patterns.\\nARTICLE: 15\\nSEVERITY: MEDIUM\\nEVIDENCE: Lines {lines} have regex validation but incomplete prompt injection detection.\\nRECOMMENDATION: Expand validation to cover 15 injection attack patterns.",
     },
     "mixed_framework": {
-        9: "FINDING: Mixed framework lacks unified risk assessment.\\nARTICLE: 9\\nSEVERITY: HIGH\\nEVIDENCE: Lines {lines} combine frameworks without integrated ConsentGate.\\nRECOMMENDATION: Implement unified risk classification across all frameworks.",
-        10: "FINDING: Mixed framework has inconsistent PII handling.\\nARTICLE: 10\\nSEVERITY: HIGH\\nEVIDENCE: Lines {lines} show different frameworks handling PII differently.\\nRECOMMENDATION: Enforce consistent DataVault protection across integration points.",
-        11: "FINDING: Mixed framework audit trail is fragmented.\\nARTICLE: 11\\nSEVERITY: HIGH\\nEVIDENCE: Lines {lines} have disconnected logging between frameworks.\\nRECOMMENDATION: Use AuditLedger for unified decision documentation.",
+        9: "FINDING: Mixed framework lacks unified risk assessment.\\nARTICLE: 9\\nSEVERITY: HIGH\\nEVIDENCE: Lines {lines} combine frameworks without integrated risk classification system.\\nRECOMMENDATION: Implement unified risk classification across all frameworks.",
+        10: "FINDING: Mixed framework has inconsistent PII handling.\\nARTICLE: 10\\nSEVERITY: HIGH\\nEVIDENCE: Lines {lines} show different frameworks handling PII differently.\\nRECOMMENDATION: Enforce consistent PII protection layer protection across integration points.",
+        11: "FINDING: Mixed framework audit trail is fragmented.\\nARTICLE: 11\\nSEVERITY: HIGH\\nEVIDENCE: Lines {lines} have disconnected logging between frameworks.\\nRECOMMENDATION: Use structured audit logging for unified decision documentation.",
         12: "FINDING: Mixed framework has no unified audit chain.\\nARTICLE: 12\\nSEVERITY: HIGH\\nEVIDENCE: Lines {lines} show separate audit logs without HMAC chain.\\nRECOMMENDATION: Create unified HMAC-SHA256 audit chain across frameworks.",
         14: "FINDING: Mixed framework oversight is fragmented.\\nARTICLE: 14\\nSEVERITY: HIGH\\nEVIDENCE: Lines {lines} show autonomous execution across frameworks without HITL.\\nRECOMMENDATION: Implement unified HITL and kill switch for mixed execution.",
-        15: "FINDING: Mixed framework validation is inconsistent.\\nARTICLE: 15\\nSEVERITY: HIGH\\nEVIDENCE: Lines {lines} have different validation per framework.\\nRECOMMENDATION: Deploy unified InjectionDetector across all input points.",
+        15: "FINDING: Mixed framework validation is inconsistent.\\nARTICLE: 15\\nSEVERITY: HIGH\\nEVIDENCE: Lines {lines} have different validation per framework.\\nRECOMMENDATION: Deploy unified prompt injection detection across all input points.",
     },
     "obfuscated": {
-        9: "FINDING: Obfuscated code prevents risk assessment.\\nARTICLE: 9\\nSEVERITY: CRITICAL\\nEVIDENCE: Lines {lines} use minification/obfuscation preventing analysis.\\nRECOMMENDATION: Provide source code and implement transparent ConsentGate.",
-        10: "FINDING: Obfuscated code hides PII handling.\\nARTICLE: 10\\nSEVERITY: CRITICAL\\nEVIDENCE: Lines {lines} use dynamic code execution hiding data flow.\\nRECOMMENDATION: Use transparent code with explicit DataVault protection.",
-        11: "FINDING: Obfuscated code prevents decision documentation.\\nARTICLE: 11\\nSEVERITY: CRITICAL\\nEVIDENCE: Lines {lines} use eval()/exec() preventing audit logging.\\nRECOMMENDATION: Replace dynamic code with explicit AuditLedger integration.",
+        9: "FINDING: Obfuscated code prevents risk assessment.\\nARTICLE: 9\\nSEVERITY: CRITICAL\\nEVIDENCE: Lines {lines} use minification/obfuscation preventing analysis.\\nRECOMMENDATION: Provide source code and implement transparent risk classification system.",
+        10: "FINDING: Obfuscated code hides PII handling.\\nARTICLE: 10\\nSEVERITY: CRITICAL\\nEVIDENCE: Lines {lines} use dynamic code execution hiding data flow.\\nRECOMMENDATION: Use transparent code with explicit PII protection layer protection.",
+        11: "FINDING: Obfuscated code prevents decision documentation.\\nARTICLE: 11\\nSEVERITY: CRITICAL\\nEVIDENCE: Lines {lines} use eval()/exec() preventing audit logging.\\nRECOMMENDATION: Replace dynamic code with explicit structured audit logging integration.",
         12: "FINDING: Obfuscated code prevents audit chain.\\nARTICLE: 12\\nSEVERITY: CRITICAL\\nEVIDENCE: Lines {lines} dynamically execute code preventing HMAC logging.\\nRECOMMENDATION: Use transparent code with cryptographically signed audit logs.",
         14: "FINDING: Obfuscated code prevents human oversight.\\nARTICLE: 14\\nSEVERITY: CRITICAL\\nEVIDENCE: Lines {lines} dynamically execute operations without HITL.\\nRECOMMENDATION: Use transparent code with integrated human review.",
-        15: "FINDING: Obfuscated code prevents injection detection.\\nARTICLE: 15\\nSEVERITY: CRITICAL\\nEVIDENCE: Lines {lines} use code injection patterns themselves.\\nRECOMMENDATION: Use safe, transparent code with InjectionDetector.",
+        15: "FINDING: Obfuscated code prevents injection detection.\\nARTICLE: 15\\nSEVERITY: CRITICAL\\nEVIDENCE: Lines {lines} use code injection patterns themselves.\\nRECOMMENDATION: Use safe, transparent code with prompt injection detection.",
     }
 }
 
@@ -586,7 +586,7 @@ def generate_training_example(framework, article, compliance_state, template_nam
 def main():
     """Generate v2 training data."""
     print("=" * 80)
-    print("AIR Blackbox Training Data v2 - Extended Examples")
+    print("EU AI Act compliance scanner Training Data v2 - Extended Examples")
     print("=" * 80)
     
     articles = [9, 10, 11, 12, 14, 15]

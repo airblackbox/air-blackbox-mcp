@@ -62,7 +62,7 @@ Group chat conversations make consent gating architecturally difficult. Who appr
 Document provenance is the weakest link in RAG pipelines. Retrieved context contains embedded data (code, credentials, PII) with no chain of custody. No framework tracks which documents were retrieved, why, or what claims were made about them. Average compliance score: 31%.
 
 **Anthropic Claude AI Agent SDK (Newest)**  
-As of February 2026, no compliance tooling exists in the official Claude SDK. The architecture supports tool use and agentic patterns, but zero trust components are present. This gap is being addressed by air-anthropic-trust. Average compliance score: 0% (baseline).
+As of February 2026, no compliance tooling exists in the official Claude SDK. The architecture supports tool use and agentic patterns, but zero trust components are present. This gap is being addressed by structured logging for Anthropic. Average compliance score: 0% (baseline).
 
 ---
 
@@ -119,10 +119,10 @@ The industry's move toward cloud-based scanners (GitHub CodeQL, Snyk, etc.) does
 **Evaluation Method:** Rule-based scanning against 6 EU AI Act articles (9, 10, 11, 12, 14, 15)  
 
 **Pattern Detection:** Automated detection of trust components:
-- ConsentGate (tool-call gating)
-- DataVault (PII classification and protection)
-- AuditLedger (tamper-evident logging)
-- InjectionDetector (prompt injection defense)
+- Risk classification (tool-call gating)
+- PII protection (PII classification and protection)
+- Structured audit logging (tamper-evident logging)
+- Prompt injection detection (prompt injection defense)
 - HumanOversight (HITL workflows)
 - TechnicalDocumentation (inline compliance annotation)
 
@@ -184,12 +184,12 @@ Use these frameworks to guide your compliance investment.
 **6. Start with the Framework You Use Most**
 
 Don't try to comply across all 6 frameworks at once. Pick your primary framework (LangChain, OpenAI, CrewAI, AutoGen, RAG, or Anthropic) and deploy trust layers there first. Trust layer packages exist for all major frameworks:
-- air-langchain-trust
-- air-openai-trust
-- air-crewai-trust
-- air-autogen-trust
-- air-rag-trust
-- air-anthropic-trust
+- structured logging and validation
+- structured logging for OpenAI
+- structured logging for CrewAI
+- structured logging for AutoGen
+- RAG input validation
+- structured logging for Anthropic
 
 Each package provides:
 - Audit hooks for your framework
@@ -213,12 +213,12 @@ Rule-based EU AI Act compliance analysis. Scans Python code for Articles 9, 10, 
 Llama-2-based model, fine-tuned on EU AI Act text and real production codebases. Runs locally via Ollama. Provides deeper semantic analysis than rule-based scanning.
 
 **Framework Trust Layers (7 PyPI packages)**  
-- air-langchain-trust
-- air-openai-trust
-- air-crewai-trust
-- air-autogen-trust
-- air-rag-trust
-- air-anthropic-trust
+- structured logging and validation
+- structured logging for OpenAI
+- structured logging for CrewAI
+- structured logging for AutoGen
+- RAG input validation
+- structured logging for Anthropic
 
 Each provides audit hooks, consent gating, PII protection, and documentation for its respective framework.
 
