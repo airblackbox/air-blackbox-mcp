@@ -1,3 +1,5 @@
 .mcpregistry_github_token
 .mcpregistry_registry_token
 dist/
+__pycache__/
+*.pyc
