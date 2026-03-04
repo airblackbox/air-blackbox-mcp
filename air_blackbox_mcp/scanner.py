@@ -140,7 +140,7 @@ RISK_PATTERNS = {
     "risk_classification": [
         r"risk[_\s]?level", r"risk[_\s]?class", r"risk[_\s]?score",
         r"risk[_\s]?categor", r"risk[_\s]?assess", r"risk[_\s]?tier",
-        r"RiskLevel", r"CRITICAL|HIGH|MEDIUM|LOW",
+        r"RiskLevel", r"\b(?:CRITICAL|HIGH|MEDIUM|LOW)\b",
     ],
     "access_control": [
         r"@(?:requires?_auth|login_required|permission)", r"role[_\s]?based",
@@ -196,9 +196,10 @@ DOC_PATTERNS = {
 # Article 12: Record-Keeping
 RECORD_PATTERNS = {
     "structured_logging": [
-        r"structlog", r"json[_\s]?log", r"log.*format.*json",
+        r"structlog\.get_logger", r"structlog\.configure",
+        r"json[_\s]?log", r"log.*format.*json",
         r"logging\.handlers", r"(?:key|structured)[_\s]?value[_\s]?(?:log|pair)",
-        r"extra\s*=\s*\{",
+        r"extra\s*=\s*\{", r"logger\s*=\s*structlog",
     ],
     "audit_trail": [
         r"audit[_\s]?(?:log|trail|record|entry|event)",
@@ -210,7 +211,8 @@ RECORD_PATTERNS = {
         r"created_at", r"updated_at", r"isoformat",
     ],
     "log_integrity": [
-        r"hmac", r"hashlib", r"sha256", r"digest",
+        r"hmac\.new\s*\(", r"hashlib\.(?:sha256|sha512|md5)\s*\(",
+        r"\.hexdigest\s*\(", r"\.digest\s*\(",
         r"tamper[_\s]?(?:evident|proof|detect)",
         r"append[_\s]?only", r"immutable[_\s]?log",
     ],
