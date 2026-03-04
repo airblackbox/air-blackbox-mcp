@@ -97,7 +97,13 @@ FRAMEWORK_PATTERNS = {
         r"from\s+langgraph", r"AgentExecutor", r"create_openai_tools_agent",
     ],
     "crewai": [
-        r"from\s+crewai", r"import\s+crewai", r"Crew\s*\(", r"Agent\s*\(",
+        r"from\s+crewai", r"import\s+crewai", r"Crew\s*\(", r"@CrewBase",
+        r"CrewBase", r"Process\.sequential", r"Process\.hierarchical",
+    ],
+    "openai_agents_sdk": [
+        r"from\s+agents\s+import", r"import\s+agents",
+        r"Runner\.run", r"Runner\.run_streamed",
+        r"\.as_tool\s*\(", r"handoffs\s*=\s*\[",
     ],
     "autogen": [
         r"from\s+autogen", r"import\s+autogen", r"from\s+ag2",
@@ -105,7 +111,7 @@ FRAMEWORK_PATTERNS = {
     ],
     "openai": [
         r"from\s+openai", r"import\s+openai", r"OpenAI\s*\(",
-        r"client\.chat\.completions", r"function_call", r"tools\s*=",
+        r"client\.chat\.completions", r"function_call",
     ],
     "rag": [
         r"VectorStore", r"Chroma\s*\(", r"FAISS", r"Pinecone",
