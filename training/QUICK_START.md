@@ -34,7 +34,7 @@ QUICK_START.md (this file)
 ## Run the Script
 
 ```bash
-cd /Users/jasonshotwell/Desktop/air-blackbox-mcp/training
+cd training
 python3 generate_training_data.py
 ```
 
@@ -245,16 +245,16 @@ python3 --version  # Need 3.6+
 pwd  # Should be in training folder
 
 # Try absolute path
-python3 /Users/jasonshotwell/Desktop/air-blackbox-mcp/training/generate_training_data.py
+python3 training/generate_training_data.py
 ```
 
 ### Files not generated
 ```bash
 # Check write permissions
-ls -la /Users/jasonshotwell/Desktop/air-blackbox-mcp/training/
+ls -la training/
 
 # Try explicit path
-cd /Users/jasonshotwell/Desktop/air-blackbox-mcp/training
+cd training
 python3 generate_training_data.py
 ```
 
@@ -267,7 +267,7 @@ random.seed(123)  # Change from 42 to any number
 ## File Locations
 
 ```
-/Users/jasonshotwell/Desktop/air-blackbox-mcp/training/
+training/
 ├── generate_training_data.py        469 lines - Main script
 ├── training_data_expanded.jsonl     486 examples - Training data
 ├── eval_data.jsonl                  54 examples - Eval data

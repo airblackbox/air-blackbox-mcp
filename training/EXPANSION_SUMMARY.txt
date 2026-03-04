@@ -124,7 +124,7 @@ FILES CREATED
 ================================================================================
 
 GENERATORS:
-  /Users/jasonshotwell/Desktop/air-blackbox-mcp/training/
+  training/
   ├── generate_training_data.py      (469 lines) - V1 original generator
   ├── generate_training_data_v2.py   (848 lines) - V2 expansion generator
   └── merge_datasets.py              (231 lines) - Combines v1+v2

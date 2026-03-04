@@ -2,7 +2,7 @@
 AIR BLACKBOX TRAINING DATA EXPANSION - FILE MANIFEST
 ================================================================================
 
-LOCATION: /Users/jasonshotwell/Desktop/air-blackbox-mcp/training/
+LOCATION: training/
 
 GENERATOR SCRIPTS (Python):
 ├── generate_training_data.py

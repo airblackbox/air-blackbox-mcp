@@ -3,7 +3,7 @@
 ## TL;DR
 
 **What**: Benchmark script for EU AI Act compliance scanner compliance scanner  
-**Where**: `/Users/jasonshotwell/Desktop/air-blackbox-mcp/training/eval_benchmark.py`  
+**Where**: `training/eval_benchmark.py`  
 **How**: `python3 eval_benchmark.py [--test-mode] [--no-ollama]`  
 **Time**: < 2 seconds (baseline) or ~1 minute (with model)
 

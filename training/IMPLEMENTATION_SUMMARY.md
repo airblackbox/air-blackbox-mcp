@@ -241,7 +241,7 @@ for framework in [langchain, crewai, autogen, openai, rag]:
 
 ### Quick Start
 ```bash
-cd /Users/jasonshotwell/Desktop/air-blackbox-mcp/training
+cd training
 python3 generate_training_data.py
 ```
 
@@ -307,7 +307,7 @@ By Compliance State:
 ## Files Generated
 
 ```
-/Users/jasonshotwell/Desktop/air-blackbox-mcp/training/
+training/
 ├── generate_training_data.py          (469 lines, main script)
 ├── training_data_expanded.jsonl       (486 examples, ~393 KB)
 ├── eval_data.jsonl                    (54 examples, ~44 KB)

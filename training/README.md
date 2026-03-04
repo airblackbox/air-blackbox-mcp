@@ -177,7 +177,7 @@ The script uses `random.seed(42)` for reproducibility. Running the script multip
 ## File Locations
 
 ```
-/Users/jasonshotwell/Desktop/air-blackbox-mcp/training/
+training/
 ├── generate_training_data.py        # Main generation script
 ├── training_data_expanded.jsonl     # 486 training examples
 ├── eval_data.jsonl                  # 54 evaluation examples

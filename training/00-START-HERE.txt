@@ -5,7 +5,7 @@ QUICK START GUIDE
 
 PROJECT: Expand EU AI Act compliance scanner training dataset from 540 to 1,000+ examples
 STATUS: ✓ COMPLETE - 882 examples ready for production
-LOCATION: /Users/jasonshotwell/Desktop/air-blackbox-mcp/training/
+LOCATION: training/
 
 ================================================================================
 QUICK SUMMARY
@@ -25,8 +25,8 @@ FOR MODEL FINE-TUNING
 
 Use these FINAL files:
 
-  Training: /Users/jasonshotwell/Desktop/air-blackbox-mcp/training/training_data_combined.jsonl
-  Eval:     /Users/jasonshotwell/Desktop/air-blackbox-mcp/training/eval_data_combined.jsonl
+  Training: training/training_data_combined.jsonl
+  Eval:     training/eval_data_combined.jsonl
 
 Command:
   python fine_tune_llama.py \

@@ -143,7 +143,7 @@ Example:
 
 ```bash
 # Navigate to training directory
-cd /Users/jasonshotwell/Desktop/air-blackbox-mcp/training
+cd training
 
 # Quick test (10 examples, < 5 seconds)
 python3 eval_benchmark.py --test-mode --no-ollama
