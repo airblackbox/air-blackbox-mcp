@@ -126,7 +126,6 @@ python3 -m air_blackbox_mcp
 ## Links
 
 - **Website:** [airblackbox.ai](https://airblackbox.ai)
-- **Docs:** [docs.airblackbox.ai](https://docs.airblackbox.ai)
 - **GitHub:** [github.com/airblackbox](https://github.com/airblackbox)
 - **Scanner Demo:** [Hugging Face Space](https://huggingface.co/spaces/nostalgicskinco/air-blackbox-scanner)
 - **Gate (AI Firewall):** [airblackbox.ai/gate](https://airblackbox.ai/gate.html)
