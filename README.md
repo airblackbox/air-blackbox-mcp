@@ -1,3 +1,4 @@
+<!-- mcp-name: io.github.airblackbox/air-blackbox-mcp -->
 # AIR Blackbox MCP Server
 
 EU AI Act compliance scanning for **Claude Desktop**, **Cursor**, and any MCP-compatible client.
