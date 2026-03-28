@@ -151,105 +151,104 @@ async def classify_risk(tool_name: str) -> str:
 
 TRUST_LAYER_TEMPLATES = {
     "langchain": {
-        "package": "air-langchain-trust",
-        "install": "pip install air-langchain-trust",
-        "code": '''from air_langchain_trust import AirTrustCallbackHandler
+        "package": "air-blackbox[langchain]",
+        "install": "pip install air-blackbox[langchain]",
+        "code": '''from air_blackbox import AirTrust
 
-# Create the trust layer handler
-handler = AirTrustCallbackHandler(
-    audit=True,       # HMAC-SHA256 tamper-evident audit chain
-    consent=True,     # ConsentGate for high-risk actions
-    pii=True,         # DataVault PII tokenization
-)
+# Auto-detecting trust layer
+trust = AirTrust()
 
-# Add to your agent invocation:
-result = agent.invoke(
-    input_data,
-    config={"callbacks": [handler]}
-)''',
+# Attach to your LangChain agent/chain
+# Automatically adds HMAC-SHA256 audit trails, PII tokenization,
+# and consent gates for high-risk actions
+trusted_agent = trust.attach(your_agent)
+
+result = trusted_agent.invoke(input_data)''',
     },
     "crewai": {
-        "package": "air-crewai-trust",
-        "install": "pip install air-crewai-trust",
+        "package": "air-blackbox[crewai]",
+        "install": "pip install air-blackbox[crewai]",
         "code": '''from crewai import Crew, Agent, Task
-from air_crewai_trust import AirCrewAITrust
+from air_blackbox import AirTrust
 
-# Initialize trust layer
-trust = AirCrewAITrust(
-    audit=True,
-    consent=True,
-    pii=True,
-)
+# Auto-detecting trust layer
+trust = AirTrust()
 
-# Create your crew with trust layer
-crew = Crew(
-    agents=[your_agent],
-    tasks=[your_task],
-    step_callback=trust.step_callback,
-)
+# Create your crew, then attach trust layer
+crew = Crew(agents=[your_agent], tasks=[your_task])
+trusted_crew = trust.attach(crew)
 
-result = crew.kickoff()''',
+result = trusted_crew.kickoff()''',
     },
     "autogen": {
-        "package": "air-autogen-trust",
-        "install": "pip install air-autogen-trust",
+        "package": "air-blackbox[autogen]",
+        "install": "pip install air-blackbox[autogen]",
         "code": '''from autogen import AssistantAgent, UserProxyAgent
-from air_autogen_trust import AirAutoGenTrust
+from air_blackbox import AirTrust
 
-# Initialize trust layer
-trust = AirAutoGenTrust(
-    audit=True,
-    consent=True,
-    pii=True,
-)
+# Auto-detecting trust layer
+trust = AirTrust()
 
 # Wrap your agents with trust layer
-assistant = trust.wrap_agent(
-    AssistantAgent("assistant", llm_config=llm_config)
-)
+assistant = AssistantAgent("assistant", llm_config=llm_config)
+trusted_assistant = trust.attach(assistant)
 
-user_proxy = trust.wrap_agent(
-    UserProxyAgent("user_proxy", code_execution_config=False)
-)
-
-user_proxy.initiate_chat(assistant, message="Your task here")''',
+user_proxy = UserProxyAgent("user_proxy", code_execution_config=False)
+user_proxy.initiate_chat(trusted_assistant, message="Your task here")''',
     },
     "openai": {
-        "package": "air-openai-trust",
-        "install": "pip install air-openai-trust",
+        "package": "air-blackbox[openai]",
+        "install": "pip install air-blackbox[openai]",
         "code": '''from openai import OpenAI
-from air_openai_trust import AirOpenAITrust
+from air_blackbox import AirTrust
 
-# Wrap the OpenAI client with trust layer
-client = AirOpenAITrust(
-    OpenAI(),
-    audit=True,
-    consent=True,
-    pii=True,
-)
+# Auto-detecting trust layer
+trust = AirTrust()
+
+# Wrap the OpenAI client (auto-detects OpenAI SDK)
+client = trust.attach(OpenAI())
 
 # Use exactly like the normal OpenAI client
+# Every call is now HMAC-logged with tamper-evident audit trails
 response = client.chat.completions.create(
-    model="gpt-4",
+    model="gpt-4o",
     messages=[{"role": "user", "content": "Your prompt here"}]
 )''',
     },
-    "rag": {
-        "package": "air-rag-trust",
-        "install": "pip install air-rag-trust",
-        "code": '''from air_rag_trust import AirRAGTrust
+    "haystack": {
+        "package": "air-blackbox[haystack]",
+        "install": "pip install air-blackbox[haystack]",
+        "code": '''from air_blackbox import AirTrust
 
-# Initialize trust layer for RAG pipelines
-trust = AirRAGTrust(
-    audit=True,       # Log all retrieval + generation steps
-    pii=True,         # Tokenize PII in retrieved documents
-    provenance=True,  # Track document sources for Art 10
-)
+# Auto-detecting trust layer for Haystack RAG pipelines
+trust = AirTrust()
 
-# Wrap your retrieval chain
-trusted_chain = trust.wrap(your_rag_chain)
+# Wrap your Haystack pipeline
+trusted_pipeline = trust.attach(your_pipeline)
 
-result = trusted_chain.invoke({"query": "Your question here"})''',
+result = trusted_pipeline.run({"query": "Your question here"})''',
+    },
+    "adk": {
+        "package": "air-blackbox[adk]",
+        "install": "pip install air-blackbox[adk]",
+        "code": '''from air_blackbox import AirTrust
+
+# Auto-detecting trust layer for Google Agent Development Kit
+trust = AirTrust()
+
+# Wrap your ADK agent
+trusted_agent = trust.attach(your_adk_agent)''',
+    },
+    "claude": {
+        "package": "air-blackbox[claude]",
+        "install": "pip install air-blackbox[claude]",
+        "code": '''from air_blackbox import AirTrust
+
+# Auto-detecting trust layer for Claude Agent SDK
+trust = AirTrust()
+
+# Wrap your Claude agent
+trusted_agent = trust.attach(your_claude_agent)''',
     },
 }
 
@@ -334,7 +333,8 @@ async def add_trust_layer(code: str, framework: str = "") -> str:
 
     fw = framework.lower().replace("-", "").replace("_", "").replace(" ", "")
     # Normalize common names
-    fw_map = {"llama_index": "rag", "llamaindex": "rag", "haystack": "rag"}
+    fw_map = {"llama_index": "haystack", "llamaindex": "haystack", "rag": "haystack",
+              "googleadk": "adk", "claudeagent": "claude", "anthropic": "claude"}
     fw = fw_map.get(fw, fw)
 
     if fw not in TRUST_LAYER_TEMPLATES:
@@ -382,9 +382,11 @@ async def suggest_fix(article: int, framework: str = "") -> str:
     fix = art["fixes"].get(fw, art["fixes"]["default"])
 
     # Also include trust layer info if applicable
+    # Normalize framework names for template lookup
+    fw_lookup = {"rag": "haystack"}.get(fw, fw)
     trust_info = None
-    if fw in TRUST_LAYER_TEMPLATES:
-        tmpl = TRUST_LAYER_TEMPLATES[fw]
+    if fw_lookup in TRUST_LAYER_TEMPLATES:
+        tmpl = TRUST_LAYER_TEMPLATES[fw_lookup]
         trust_info = {
             "package": tmpl["package"],
             "install": tmpl["install"],
@@ -564,10 +566,15 @@ async def generate_compliance_report(code: str) -> str:
 
     if not has_trust:
         fw = frameworks[0] if frameworks else "langchain"
+        # Normalize framework name for template lookup
+        fw_lookup = {"llama_index": "haystack", "llamaindex": "haystack", "rag": "haystack",
+                     "googleadk": "adk", "claudeagent": "claude", "anthropic": "claude"}.get(fw, fw)
         lines.append("\n## Recommended Next Step\n")
         lines.append(f"Install the AIR trust layer for {fw}:")
-        if fw in TRUST_LAYER_TEMPLATES:
-            lines.append(f"```\n{TRUST_LAYER_TEMPLATES[fw]['install']}\n```")
+        if fw_lookup in TRUST_LAYER_TEMPLATES:
+            lines.append(f"```\n{TRUST_LAYER_TEMPLATES[fw_lookup]['install']}\n```")
+        else:
+            lines.append("```\npip install air-blackbox\n```")
 
     report = "\n".join(lines)
     return json.dumps({"report": report, "scan_data": scan}, indent=2)
