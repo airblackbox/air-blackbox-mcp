@@ -11,3 +11,5 @@ venv/
 .env
 .mcpregistry_github_token
 .mcpregistry_registry_token
+.mcpregistry_github_token
+.mcpregistry_registry_token
