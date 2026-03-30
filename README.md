@@ -46,6 +46,10 @@ pip install air-blackbox-mcp[full]
 
 Installs the full `air-blackbox` SDK (v1.6.3+) for advanced compliance features.
 
+## Hosted deployment
+
+A hosted deployment is available on [Fronteir AI](https://fronteir.ai/mcp/airblackbox-air-blackbox-mcp).
+
 ## Claude Desktop Setup
 
 Edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
