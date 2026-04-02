@@ -1,6 +1,10 @@
 <!-- mcp-name: io.github.airblackbox/air-blackbox-mcp -->
 # AIR Blackbox MCP Server
 
+<p align="center">
+  <img src="demo.gif" alt="AIR Blackbox MCP demo" width="900">
+</p>
+
 EU AI Act compliance scanning for **Claude Desktop**, **Claude Code**, **Cursor**, and any MCP-compatible client.
 
 Unlike other compliance scanners that only report problems, AIR Blackbox also **remediates** — generating working code fixes, trust layer integrations, GDPR compliance checks, bias analysis, and full compliance reports.
