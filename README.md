@@ -7,7 +7,7 @@
 
 EU AI Act compliance scanning for **Claude Desktop**, **Claude Code**, **Cursor**, and any MCP-compatible client.
 
-Unlike other compliance scanners that only report problems, AIR Blackbox also **remediates** — generating working code fixes, trust layer integrations, GDPR compliance checks, bias analysis, and full compliance reports.
+Unlike other compliance scanners that only report problems, AIR Blackbox also **remediates** — generating working code fixes, trust layer integrations, GDPR compliance checks, bias analysis, and full compliance reports. Under the hood, the scanning feeds into **air-trust**, a cryptographic audit chain (HMAC-SHA256) with Ed25519 signed handoffs that ensures compliance data integrity.
 
 ## 14 Tools (10 base + 4 SDK-powered)
 
@@ -145,16 +145,10 @@ ollama pull air-compliance-v2
 
 Other MCP compliance tools only scan. AIR Blackbox:
 
-1. **Scans** — 18+ regex patterns across 6 EU AI Act articles
-2. **Analyzes** — local fine-tuned model catches what regex misses
-3. **Remediates** — generates working code to fix findings
-4. **Verifies** — checks for prompt injection with 15 weighted patterns
-5. **Classifies** — maps tools to EU AI Act risk levels
-6. **Documents** — produces full compliance reports
-7. **GDPR checks** — personal data and consent auditing (SDK)
-8. **Bias detection** — fairness and disparate impact analysis (SDK)
-9. **Validates actions** — pre-execution approval gates (SDK)
-10. **Tracks trends** — compliance history and improvement metrics (SDK)
+1. **Scans + Remediates** — finds issues across 6 EU AI Act articles AND generates working code fixes
+2. **Analyzes deeply** — regex patterns + AI-powered model analysis + prompt injection detection (15 patterns)
+3. **Validates before execution** — pre-approval gates and risk classification for agent actions (Article 14)
+4. **Tracks compliance** — GDPR checks, bias analysis, full reports, and historical trend monitoring (SDK)
 
 ## Architecture
 
@@ -167,9 +161,15 @@ The server uses a smart fallback pattern:
 
 This means the MCP server works standalone, but gets dramatically more powerful when the SDK is present.
 
+## Part of AIR Blackbox
+
+This MCP server is part of the **AIR Blackbox ecosystem**:
+
+- **air-trust** on [PyPI](https://pypi.org/project/air-trust/) — the cryptographic audit chain that backs compliance scanning
+- **air-blackbox** on [PyPI](https://pypi.org/project/air-blackbox/) — the full compliance SDK and CLI scanner
+- **[airblackbox.ai](https://airblackbox.ai)** — the project homepage and docs
+
 ## Links
 
-- [AIR Blackbox Scanner](https://pypi.org/project/air-blackbox/) — the CLI scanner
-- [airblackbox.ai](https://airblackbox.ai) — project homepage
 - [EU AI Act](https://eur-lex.europa.eu/eli/reg/2024/1689/oj) — the regulation
 - [GDPR](https://gdpr-info.eu/) — data protection regulation
