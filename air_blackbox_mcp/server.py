@@ -341,8 +341,8 @@ async def add_trust_layer(code: str, framework: str = "") -> str:
 
     fw = framework.lower().replace("-", "").replace("_", "").replace(" ", "")
     # Normalize common names
-    fw_map = {"llama_index": "haystack", "llamaindex": "haystack", "rag": "haystack",
-              "googleadk": "adk", "claudeagent": "claude", "anthropic": "claude"}
+    fw_map = {"googleadk": "adk", "claudeagent": "claude", "anthropic": "claude",
+              "rag": "haystack"}
     fw = fw_map.get(fw, fw)
 
     if fw not in TRUST_LAYER_TEMPLATES:
@@ -576,8 +576,8 @@ async def generate_compliance_report(code: str) -> str:
     if not has_trust:
         fw = frameworks[0] if frameworks else "langchain"
         # Normalize framework name for template lookup
-        fw_lookup = {"llama_index": "haystack", "llamaindex": "haystack", "rag": "haystack",
-                     "googleadk": "adk", "claudeagent": "claude", "anthropic": "claude"}.get(fw, fw)
+        fw_lookup = {"googleadk": "adk", "claudeagent": "claude", "anthropic": "claude",
+                     "rag": "haystack"}.get(fw, fw)
         lines.append("\n## Recommended Next Step\n")
         lines.append(f"Install the AIR trust layer for {fw}:")
         if fw_lookup in TRUST_LAYER_TEMPLATES:
@@ -624,7 +624,10 @@ async def scan_gdpr(code: str) -> str:
 
         result = _scan_gdpr_sdk(temp_path)
         os.unlink(temp_path)
-        return json.dumps(result, indent=2)
+        # Convert dataclass objects to dicts for JSON serialization
+        from dataclasses import asdict
+        serializable = [asdict(r) if hasattr(r, '__dataclass_fields__') else r for r in result] if isinstance(result, list) else result
+        return json.dumps(serializable, indent=2, default=str)
     except Exception as e:
         return json.dumps({
             "error": str(e),

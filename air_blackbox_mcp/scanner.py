@@ -6,7 +6,7 @@ across Articles 9, 10, 11, 12, 14, and 15.
 """
 import os
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
 # ── Framework detection ──────────────────────────────────────────
