@@ -164,16 +164,20 @@ def _to_dict(f: Finding) -> dict:
 
 def _check_art9(code: str) -> list[Finding]:
     findings = []
-    # Error handling around LLM calls
+    # Error handling around LLM calls - only relevant if AI/LLM code exists
     llm_patterns = r'\.chat\.completions\.create\(|\.invoke\(|\.run\(|\.generate\(|\.predict\('
+    ai_context_pats = r'from\s+(?:openai|langchain|crewai|autogen|anthropic|llama_index|haystack)|import\s+(?:openai|langchain|crewai|autogen|anthropic)|ChatOpenAI|AgentExecutor|Crew\(|OpenAI\(\)'
     has_llm = bool(re.search(llm_patterns, code))
+    has_ai_context = bool(re.search(ai_context_pats, code))
     has_try = bool(re.search(r'\btry\b.*?\bexcept\b', code, re.DOTALL))
-    if has_llm:
+    # Only emit this finding if there's actual AI/LLM code present
+    if has_llm and has_ai_context:
         findings.append(Finding(article=9, name="LLM call error handling",
             severity="HIGH" if not has_try else "LOW",
             status="pass" if has_try else "fail",
             evidence="LLM calls wrapped in try/except" if has_try else "LLM calls found without error handling",
             fix_hint="Wrap LLM API calls in try/except to handle failures gracefully"))
+    # If .invoke()/.run() exist but no AI imports, skip -- too generic to flag
     # Fallback patterns
     fallback_pats = r'fallback|retry|backoff|with_fallbacks|with_retry|tenacity|max_retries'
     has_fallback = bool(re.search(fallback_pats, code, re.IGNORECASE))
@@ -188,13 +192,19 @@ def _check_art9(code: str) -> list[Finding]:
 
 def _check_art10(code: str) -> list[Finding]:
     findings = []
-    # Input validation
+    # Input validation -- only relevant if the file contains AI/LLM code
+    ai_context_pats = r'from\s+(?:openai|langchain|crewai|autogen|anthropic|llama_index|haystack)|import\s+(?:openai|langchain|crewai|autogen|anthropic)|ChatOpenAI|AgentExecutor|Crew\(|OpenAI\(\)|\.chat\.completions\.create\('
+    has_ai_context = bool(re.search(ai_context_pats, code))
     input_pats = r'pydantic|BaseModel|validator|field_validator|validate_input|TypedDict|dataclass|InputGuard|sanitize'
     has_input = bool(re.search(input_pats, code))
-    findings.append(Finding(article=10, name="Input validation / schema enforcement",
-        severity="MEDIUM", status="pass" if has_input else "warn",
-        evidence="Input validation detected (Pydantic/dataclass/TypedDict)" if has_input else "No structured input validation found",
-        fix_hint="Use Pydantic models or dataclasses to validate inputs before LLM calls"))
+    if has_ai_context:
+        findings.append(Finding(article=10, name="Input validation / schema enforcement",
+            severity="MEDIUM", status="pass" if has_input else "warn",
+            evidence="Input validation detected (Pydantic/dataclass/TypedDict)" if has_input else "No structured input validation found",
+            fix_hint="Use Pydantic models or dataclasses to validate inputs before LLM calls"))
+    elif has_input:
+        # Has validation but no AI context -- skip silently (non-AI code)
+        pass
     # PII handling
     pii_pats = r'pii|redact|mask_(?:data|pii|email)|anonymize|tokenize_pii|presidio|scrub|sensitive_data|gdpr|personal_data'
     has_pii = bool(re.search(pii_pats, code, re.IGNORECASE))
@@ -279,9 +289,17 @@ def _check_art12(code: str) -> list[Finding]:
         status=status,
         evidence=evidence,
         fix_hint="Add import logging and log key decisions, errors, and LLM interactions"))
-    # Tracing / observability
-    trace_pats = r'opentelemetry|otel|trace_id|span_id|run_id|request_id|langsmith|langfuse|helicone|instrumentation|dispatcher|event_handler|TracerProvider|callbacks'
-    has_trace = bool(re.search(trace_pats, code, re.IGNORECASE))
+    # Tracing / observability -- require actual tracing library import or setup
+    # Strong signals: actual tracing libraries being imported or configured
+    trace_import_pats = r'from\s+opentelemetry|import\s+opentelemetry|from\s+langsmith|import\s+langsmith|from\s+langfuse|import\s+langfuse|from\s+helicone|import\s+helicone|TracerProvider|InstrumentorBase'
+    # Moderate signals: tracing concepts used in code (but need AI context too)
+    trace_usage_pats = r'trace_id|span_id|run_id|otel|instrumentation|dispatcher|event_handler|callbacks'
+    has_trace_import = bool(re.search(trace_import_pats, code, re.IGNORECASE))
+    has_trace_usage = bool(re.search(trace_usage_pats, code, re.IGNORECASE))
+    # Pass only if there's a real tracing library import, or tracing usage with AI context
+    ai_context_pats_trace = r'from\s+(?:openai|langchain|crewai|autogen|anthropic|llama_index|haystack)|import\s+(?:openai|langchain|crewai|autogen|anthropic)'
+    has_ai_for_trace = bool(re.search(ai_context_pats_trace, code))
+    has_trace = has_trace_import or (has_trace_usage and has_ai_for_trace)
     findings.append(Finding(article=12, name="Tracing / observability",
         severity="MEDIUM",
         status="pass" if has_trace else "warn",
@@ -310,9 +328,19 @@ def _check_art14(code: str) -> list[Finding]:
         status="pass" if has_hitl else "warn",
         evidence="Human oversight patterns found" if has_hitl else "No human approval gates detected",
         fix_hint="Add human approval gates for high-risk actions"))
-    # Rate limiting / budget
-    rate_pats = r'rate_limit|max_tokens|max_iterations|max_steps|budget|token_limit|cost_limit|throttle|max_rpm'
-    has_rate = bool(re.search(rate_pats, code, re.IGNORECASE))
+    # Rate limiting / budget -- require AI context for generic terms like max_tokens
+    ai_context_pats_14 = r'from\s+(?:openai|langchain|crewai|autogen|anthropic|llama_index|haystack)|import\s+(?:openai|langchain|crewai|autogen|anthropic)|ChatOpenAI|AgentExecutor|Crew\(|OpenAI\(\)|\.chat\.completions\.create\('
+    has_ai_for_rate = bool(re.search(ai_context_pats_14, code))
+    # Strong signals: AI-specific rate limiting patterns
+    strong_rate_pats = r'token_limit|cost_limit|max_rpm|max_iterations|max_steps|budget'
+    # Weak signals: could be generic Python, need AI context
+    weak_rate_pats = r'rate_limit|max_tokens|throttle'
+    has_strong_rate = bool(re.search(strong_rate_pats, code, re.IGNORECASE))
+    has_weak_rate = bool(re.search(weak_rate_pats, code, re.IGNORECASE))
+    # max_tokens=None doesn't count -- it's explicitly unbounded
+    if has_weak_rate and re.search(r'max_tokens\s*=\s*None', code):
+        has_weak_rate = bool(re.search(r'rate_limit|throttle', code, re.IGNORECASE))
+    has_rate = has_strong_rate or (has_weak_rate and has_ai_for_rate)
     findings.append(Finding(article=14, name="Usage limits / budget controls",
         severity="MEDIUM",
         status="pass" if has_rate else "warn",
