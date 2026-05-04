@@ -1,12 +1,12 @@
 """
-AIR Blackbox MCP Server — EU AI Act compliance scanning for AI agents.
+AIR Blackbox MCP Server - EU AI Act compliance scanning for AI agents.
 
 14 tools across 4 tiers with full air-blackbox SDK integration:
-  Tier 1 — Scanning:    scan_code, scan_file, scan_project
-  Tier 2 — Analysis:    analyze_with_model, check_injection, classify_risk
-  Tier 3 — Remediation: add_trust_layer, suggest_fix
-  Tier 4 — Docs:        explain_article, generate_compliance_report
-  Tier 5 — New SDK:     scan_gdpr, scan_bias, validate_action, compliance_history
+  Tier 1 - Scanning:    scan_code, scan_file, scan_project
+  Tier 2 - Analysis:    analyze_with_model, check_injection, classify_risk
+  Tier 3 - Remediation: add_trust_layer, suggest_fix
+  Tier 4 - Docs:        explain_article, generate_compliance_report
+  Tier 5 - New SDK:     scan_gdpr, scan_bias, validate_action, compliance_history
 
 Server tries to import from air_blackbox SDK first. Falls back to built-in
 lightweight scanner if SDK is not installed.
@@ -28,7 +28,7 @@ from air_blackbox_mcp.scanner import (
 
 mcp = FastMCP(
     "air-blackbox",
-    instructions="EU AI Act compliance scanner with GDPR and bias detection — scan, analyze, remediate, and protect AI agent code. 14 tools across scanning, analysis, remediation, and documentation.",
+    instructions="EU AI Act compliance scanner with GDPR and bias detection - scan, analyze, remediate, and protect AI agent code. 14 tools across scanning, analysis, remediation, and documentation.",
 )
 
 
@@ -118,7 +118,7 @@ async def analyze_with_model(code: str) -> str:
 
     # Fallback to rule-based
     result = _scan_code(code)
-    result["source"] = "rule-based (Ollama not available — install: ollama pull air-compliance-v2)"
+    result["source"] = "rule-based (Ollama not available - install: ollama pull air-compliance-v2)"
     return json.dumps(result, indent=2)
 
 
@@ -565,7 +565,7 @@ async def generate_compliance_report(code: str) -> str:
     for art_num in sorted(by_article.keys()):
         art_findings = by_article[art_num]
         art_name = article_names.get(art_num, f"Article {art_num}")
-        lines.append(f"\n## Article {art_num} — {art_name}\n")
+        lines.append(f"\n## Article {art_num} - {art_name}\n")
         for f in art_findings:
             icon = {"pass": "PASS", "warn": "WARN", "fail": "FAIL"}.get(f["status"], "?")
             lines.append(f"- **[{icon}]** {f['name']} (Severity: {f['severity']})")
