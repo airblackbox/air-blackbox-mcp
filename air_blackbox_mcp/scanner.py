@@ -255,13 +255,29 @@ def _check_art11(code: str) -> list[Finding]:
 
 def _check_art12(code: str) -> list[Finding]:
     findings = []
-    # Logging
-    log_pats = r'import logging|from logging|getLogger|structlog|loguru|logger\.|logging\.'
-    has_log = bool(re.search(log_pats, code))
+    # Logging - require BOTH import AND actual log calls near AI/LLM code
+    log_import_pats = r'import logging|from logging|import structlog|from structlog|import loguru|from loguru'
+    log_call_pats = r'logger\.\w+\(|logging\.\w+\(|structlog\.\w+\(|log\.\w+\('
+    has_import = bool(re.search(log_import_pats, code))
+    has_calls = bool(re.search(log_call_pats, code))
+    # Check if logging is used near AI/LLM patterns (within context)
+    ai_pats = r'\.invoke\(|\.run\(|\.generate\(|\.predict\(|completions\.create|\.kickoff\(|agent|llm|model'
+    has_ai = bool(re.search(ai_pats, code, re.IGNORECASE))
+    # Only pass if logging is both imported AND called. If AI code exists
+    # but logging is only imported (never called), that's a warn.
+    if has_import and has_calls:
+        status = "pass"
+        evidence = "Logging framework imported and actively used"
+    elif has_import and not has_calls:
+        status = "warn"
+        evidence = "Logging imported but no log calls found - logging may be unused"
+    else:
+        status = "fail"
+        evidence = "No logging framework found"
     findings.append(Finding(article=12, name="Application logging",
-        severity="HIGH" if not has_log else "LOW",
-        status="pass" if has_log else "fail",
-        evidence="Logging framework detected" if has_log else "No logging framework found",
+        severity="HIGH" if status == "fail" else "MEDIUM" if status == "warn" else "LOW",
+        status=status,
+        evidence=evidence,
         fix_hint="Add import logging and log key decisions, errors, and LLM interactions"))
     # Tracing / observability
     trace_pats = r'opentelemetry|otel|trace_id|span_id|run_id|request_id|langsmith|langfuse|helicone|instrumentation|dispatcher|event_handler|TracerProvider|callbacks'
@@ -325,13 +341,40 @@ def _check_art14(code: str) -> list[Finding]:
 
 def _check_art15(code: str) -> list[Finding]:
     findings = []
-    # Injection defense
-    inj_pats = r'prompt.?injection|guardrail|content_filter|moderation|safety_check|prompt_guard|nemo_guardrails|rebuff|lakera|hallucination_guardrail|llm_guardrail|trust_policy'
-    has_inj = bool(re.search(inj_pats, code, re.IGNORECASE))
+    # Injection defense - require actual implementation, not just mentions in comments
+    # Strip comments first to avoid false positives on "# TODO: add guardrail"
+    code_no_comments = re.sub(r'#[^\n]*', '', code)
+    code_no_docstrings = re.sub(r'"""[\s\S]*?"""|\'\'\'[\s\S]*?\'\'\'', '', code_no_comments)
+
+    # Strong signals: actual imports or instantiations of security libraries
+    strong_inj_pats = r'from\s+\w*(?:guardrail|nemo|rebuff|lakera|prompt_guard)\w*\s+import|import\s+\w*(?:guardrail|nemo|rebuff|lakera|prompt_guard)\w*|NeMoGuardrails\(|Rebuff\(|Lakera\(|PromptGuard\(|ContentFilter\(|ModerationClient\('
+    has_strong = bool(re.search(strong_inj_pats, code_no_docstrings, re.IGNORECASE))
+
+    # Moderate signals: function definitions or calls that implement defense
+    moderate_inj_pats = r'def\s+(?:check|detect|filter|block|sanitize).*(?:inject|prompt|input)|content_filter\s*\(|moderation\s*\(|safety_check\s*\(|check_injection\s*\(|sanitize_input\s*\(|validate_prompt\s*\('
+    has_moderate = bool(re.search(moderate_inj_pats, code_no_docstrings, re.IGNORECASE))
+
+    # Weak signals: just the words in actual code (not comments) - only warn
+    weak_inj_pats = r'guardrail|content_filter|prompt.?injection|trust_policy'
+    has_weak = bool(re.search(weak_inj_pats, code_no_docstrings, re.IGNORECASE))
+
+    if has_strong:
+        status = "pass"
+        evidence = "Injection defense library imported and instantiated"
+    elif has_moderate:
+        status = "pass"
+        evidence = "Custom injection defense implementation detected"
+    elif has_weak:
+        status = "warn"
+        evidence = "Security-related terms found in code but no active defense implementation"
+    else:
+        status = "warn"
+        evidence = "No prompt injection defense detected"
+
     findings.append(Finding(article=15, name="Prompt injection defense",
-        severity="HIGH" if not has_inj else "LOW",
-        status="pass" if has_inj else "warn",
-        evidence="Injection defense patterns found" if has_inj else "No prompt injection defense detected",
+        severity="HIGH" if status == "warn" and not has_weak else "MEDIUM" if status == "warn" else "LOW",
+        status=status,
+        evidence=evidence,
         fix_hint="Add input sanitization or guardrails to detect prompt injection"))
     # Output validation
     out_pats = r'output_parser|OutputParser|PydanticOutputParser|JsonOutputParser|validate_output|response_model|structured_output|output_pydantic|output_json'
