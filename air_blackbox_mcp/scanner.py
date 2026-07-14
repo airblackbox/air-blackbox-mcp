@@ -129,20 +129,62 @@ def scan_project(directory: str) -> dict:
     if not py_files:
         return {"error": f"No Python files found in {directory}", "files_scanned": 0}
 
-    # Merge all code for a project-level scan
-    all_code = []
+    # Scan each file individually, then aggregate. (Merging all files into
+    # one blob lets a try/except in ANY file satisfy the error-handling
+    # check for the whole project, inflating scores.)
     file_results = []
+    frameworks: set[str] = set()
+    trust_detected = False
+    # (article, name) -> worst finding seen across files
+    _rank = {"pass": 0, "warn": 1, "fail": 2}
+    aggregated: dict[tuple[int, str], dict] = {}
+    fail_counts: dict[tuple[int, str], int] = {}
+
     for fp in py_files:
         try:
             with open(fp, "r", encoding="utf-8", errors="ignore") as f:
                 code = f.read()
-            all_code.append(code)
-            file_results.append({"file": os.path.relpath(fp, directory), "lines": len(code.splitlines())})
         except Exception:
             continue
+        rel = os.path.relpath(fp, directory)
+        file_scan = scan_code(code)
+        frameworks.update(file_scan["frameworks"])
+        trust_detected = trust_detected or file_scan["trust_layer_detected"]
+        file_results.append({
+            "file": rel,
+            "lines": len(code.splitlines()),
+            "score": file_scan["summary"]["score"],
+        })
+        for finding in file_scan["findings"]:
+            key = (finding["article"], finding["name"])
+            if finding["status"] != "pass":
+                fail_counts[key] = fail_counts.get(key, 0) + 1
+            prev = aggregated.get(key)
+            if prev is None or _rank[finding["status"]] > _rank[prev["status"]]:
+                worst = dict(finding)
+                worst["evidence"] = f"{rel}: {finding['evidence']}"
+                aggregated[key] = worst
 
-    merged = "\n\n".join(all_code)
-    result = scan_code(merged)
+    findings = list(aggregated.values())
+    for key, finding in aggregated.items():
+        n = fail_counts.get(key, 0)
+        if n > 1:
+            finding["evidence"] += f" (and {n - 1} other file{'s' if n > 2 else ''})"
+
+    total = len(findings)
+    passing = sum(1 for f in findings if f["status"] == "pass")
+    result = {
+        "frameworks": sorted(frameworks),
+        "trust_layer_detected": trust_detected,
+        "findings": findings,
+        "summary": {
+            "total_checks": total,
+            "passing": passing,
+            "warnings": sum(1 for f in findings if f["status"] == "warn"),
+            "failing": sum(1 for f in findings if f["status"] == "fail"),
+            "score": f"{passing}/{total}",
+        },
+    }
     result["directory"] = directory
     result["files_scanned"] = len(file_results)
     result["files"] = file_results[:20]  # Cap at 20 to keep response size manageable
@@ -435,13 +477,19 @@ def _check_art15(code: str) -> list[Finding]:
 
 INJECTION_PATTERNS = [
     ("role_override", 0.9, r"(?i)(ignore|disregard|forget).*(?:previous|above|prior).*(?:instruction|rule|prompt)"),
-    ("dan_jailbreak", 0.9, r"(?i)(DAN|do anything now|jailbreak|unlock|god mode)"),
+    # "DAN" must stay case-sensitive (matching "dan"/"Dandelion" would block
+    # ordinary text); "unlock" needs a restrictions/safety object.
+    ("dan_jailbreak", 0.9, r"\bDAN\b|(?i:\bdo anything now\b|\bjailbreak\b|\bgod.?mode\b|\bunlock\b.{0,30}\b(?:restriction|filter|safety|capabilit|potential|mode)\w*)"),
     ("system_prompt_override", 0.85, r"(?i)(system prompt|system message|system instruction).*(?:is|was|should be|override)"),
     ("safety_bypass", 0.85, r"(?i)(bypass|disable|turn off|ignore).*(?:safety|filter|guard|restriction|rule)"),
     ("new_identity", 0.8, r"(?i)(you are now|act as|pretend to be|roleplay as|your new role)"),
-    ("urgent_override", 0.8, r"(?i)(emergency|urgent|critical|override|admin).*(?:command|order|instruction|access)"),
-    ("privilege_escalation", 0.75, r"(?i)(sudo|admin|root|superuser|elevated|privilege)"),
-    ("delimiter_injection", 0.7, r"(?i)(```|<\|im_sep\|>|<\|endoftext\|>|\[INST\]|\[/INST\])"),
+    ("urgent_override", 0.8, r"(?i)(emergency|urgent|critical|admin)\s+(?:override|command|order|instruction)"),
+    # Privilege escalation must be directed AT the assistant ("you now have
+    # root access"), not merely mention sudo/admin (a devops question is fine).
+    ("privilege_escalation", 0.75, r"(?i)(?:you (?:are|have|now have)|act (?:as|with)|grant (?:me|yourself)|give (?:me|yourself)|i am (?:the|an?|your)|enable|activate|switch to)\s+(?:\w+\s+){0,3}(?:sudo|root|admin|superuser|elevated|privilege|developer mode)"),
+    # Model-specific control tokens only. Markdown code fences (```) are
+    # ubiquitous in legitimate text and must not trigger a block.
+    ("delimiter_injection", 0.7, r"(?i)(<\|im_sep\|>|<\|im_start\|>|<\|im_end\|>|<\|endoftext\|>|\[INST\]|\[/INST\]|<<SYS>>)"),
     ("hidden_instruction", 0.7, r"(?i)(hidden|secret|covert|invisible).*(?:instruction|command|prompt|message)"),
     ("data_exfil", 0.65, r"(?i)(send|post|email|upload|exfiltrate|leak).*(?:data|info|secret|key|password|token)"),
     ("xml_tag_injection", 0.6, r"</?(?:system|assistant|user|human|ai|instruction)[^>]*>"),
@@ -485,12 +533,27 @@ RISK_MAP = {
 }
 
 
+def _tokenize_tool_name(name: str) -> list[str]:
+    """Split a tool name into lowercase word tokens.
+
+    Handles snake_case, kebab-case, dotted.paths, and camelCase so that
+    keywords match whole words only ("rm" matches "rm_file" but not
+    "confirm_order").
+    """
+    spaced = re.sub(r"(?<=[a-z0-9])(?=[A-Z])", "_", name)
+    return [t for t in re.split(r"[^a-zA-Z0-9]+", spaced.lower()) if t]
+
+
 def classify_risk(tool_name: str) -> dict:
     """Classify a tool/function name by EU AI Act risk level."""
-    name_lower = tool_name.lower()
+    tokens = _tokenize_tool_name(tool_name)
+    joined = "_" + "_".join(tokens) + "_"
     for level, keywords in RISK_MAP.items():
         for kw in keywords:
-            if kw in name_lower:
+            kw_tokens = _tokenize_tool_name(kw)
+            # Match whole tokens (or token sequences for multi-word
+            # keywords like "os.system"), never substrings.
+            if "_" + "_".join(kw_tokens) + "_" in joined:
                 return {
                     "tool": tool_name,
                     "risk_level": level,
