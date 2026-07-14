@@ -2,6 +2,17 @@
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.hatch.build.targets.sdist]
+# Ship only the package and metadata - keep demo assets, benchmarks,
+# and internal docs out of the PyPI tarball.
+only-include = [
+    "air_blackbox_mcp",
+    "tests/test_scanner.py",
+    "README.md",
+    "LICENSE",
+    "server.json",
+]
+
 [project]
 name = "air-blackbox-mcp"
 version = "0.2.3"
