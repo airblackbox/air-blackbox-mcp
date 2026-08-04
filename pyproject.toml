@@ -30,7 +30,10 @@ classifiers = [
     "Topic :: Software Development :: Quality Assurance",
 ]
 dependencies = [
-    "mcp>=1.0.0",
+    # <2 is load-bearing: mcp 2.0 removed mcp.server.fastmcp, which server.py
+    # imports, so an unpinned install resolves to 2.x and the server cannot
+    # import at all. The SDK repo hit the identical break (airblackbox#60).
+    "mcp>=1.0,<2",
 ]
 
 [project.optional-dependencies]
