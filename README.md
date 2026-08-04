@@ -152,14 +152,54 @@ Other MCP compliance tools only scan. AIR Blackbox:
 
 ## Architecture
 
-The server uses a smart fallback pattern:
+**Which engine runs is fixed per tool, not a runtime fallback.** Earlier versions
+of this README described a "try the SDK first, fall back to built-in" pattern.
+That was never what the code did, and it mattered: a reader could not tell
+whether two reports came from the same rules. The actual behavior:
 
-1. **Try SDK first** - If `air-blackbox>=1.6.0` is installed, use the full compliance engine
-2. **Fall back gracefully** - If SDK isn't installed, use the lightweight built-in scanner
-3. **No breaking changes** - Works with just `pip install air-blackbox-mcp` (basic mode)
-4. **Opt-in superpower** - Install `[full]` to unlock advanced features
+| Tools | Engine | If the SDK is missing |
+|---|---|---|
+| Tiers 1–4 (`scan_code`, `scan_file`, `scan_project`, `check_injection`, `classify_risk`, …) | Always the built-in rule-based scanner | No effect — these never use the SDK |
+| Tier 5 (`scan_gdpr`, `scan_bias`, `validate_action`, `compliance_history`) | Always the full `air-blackbox` SDK | Explicit error telling you to install `[full]` |
 
-This means the MCP server works standalone, but gets dramatically more powerful when the SDK is present.
+So a given tool produces results from the same engine on every install, and
+there is no silent switch between engines.
+
+### Result provenance
+
+Because a compliance finding is only comparable to another if you know what
+produced it, **every machine-readable result carries a `provenance` block**:
+
+```json
+{
+  "findings": [ ... ],
+  "provenance": {
+    "engine": "builtin-rules",
+    "scanner_version": "0.2.4",
+    "ruleset_id": "eu-ai-act-art9-15",
+    "ruleset_version": "cee71577c486",
+    "sdk_version": null
+  }
+}
+```
+
+- `engine` — `builtin-rules` or `air-blackbox-sdk`, whichever actually ran.
+- `ruleset_version` — a content hash of the active rules, not a hand-maintained
+  string. Change a regex and it changes by itself; a version someone must
+  remember to bump is one that eventually misreports which rules ran.
+- `sdk_version` — the SDK that *produced* this result, so it is `null` for
+  built-in results even when the SDK is installed alongside. Reporting a
+  version that contributed nothing would imply its rules ran.
+
+Two reports with the same `engine` + `ruleset_version` were produced by
+byte-identical rules and can be diffed directly. Different values mean the
+rules moved, and the diff needs that context to be meaningful.
+
+Errors carry provenance too — knowing which version produced an error is as
+useful as knowing which version produced a finding.
+
+Install `[full]` to unlock the Tier 5 SDK tools; the base install works
+standalone.
 
 ## Part of AIR Blackbox
 

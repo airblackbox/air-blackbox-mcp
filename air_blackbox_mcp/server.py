@@ -8,8 +8,18 @@ AIR Blackbox MCP Server - EU AI Act compliance scanning for AI agents.
   Tier 4 - Docs:        explain_article, generate_compliance_report
   Tier 5 - New SDK:     scan_gdpr, scan_bias, validate_action, compliance_history
 
-Server tries to import from air_blackbox SDK first. Falls back to built-in
-lightweight scanner if SDK is not installed.
+Which engine runs is a fixed property of each tool, NOT a runtime fallback:
+
+  Tiers 1-4 always run the built-in rule-based scanner (air_blackbox_mcp.
+  scanner), whether or not the full SDK is installed.
+
+  Tier 5 always runs the full air-blackbox SDK, and returns an explicit error
+  if it is not installed (pip install air-blackbox-mcp[full]).
+
+So a given tool's results come from the same engine on every install. Every
+machine-readable result carries a `provenance` block naming that engine, its
+version, and a content hash of the active rule set, so two reports can be
+compared with confidence. See provenance.py.
 """
 import json
 import subprocess
@@ -18,6 +28,7 @@ import os
 from mcp.server.fastmcp import FastMCP
 
 from air_blackbox_mcp import __version__
+from air_blackbox_mcp.provenance import ENGINE_SDK, stamp
 from air_blackbox_mcp.scanner import (
     scan_code as _scan_code,
     scan_file as _scan_file,
@@ -26,6 +37,15 @@ from air_blackbox_mcp.scanner import (
     classify_risk as _classify_risk,
     detect_framework,
 )
+
+
+def _sdk_json(result: dict) -> str:
+    """Serialize a Tier 5 (SDK-produced) result, stamped with its provenance.
+
+    Used on every Tier 5 return path - success, missing SDK, and error alike -
+    so no SDK result can ship without saying which engine and version made it.
+    """
+    return json.dumps(stamp(result, ENGINE_SDK), indent=2, default=str)
 
 mcp = FastMCP(
     "air-blackbox",
@@ -599,7 +619,7 @@ async def generate_compliance_report(code: str) -> str:
 async def scan_gdpr(code: str) -> str:
     """Scan code for GDPR compliance issues (data processing, consent, etc.).
 
-    Available only with full air-blackbox SDK (pip install air-blackbox[full]).
+    Available only with full air-blackbox SDK (pip install air-blackbox-mcp[full]).
 
     Checks for:
     - Personal data handling without consent
@@ -611,11 +631,11 @@ async def scan_gdpr(code: str) -> str:
     try:
         from air_blackbox.compliance.gdpr_scanner import scan_gdpr as _scan_gdpr_sdk
     except ImportError:
-        return json.dumps({
+        return _sdk_json({
             "error": "air_blackbox SDK not installed",
-            "install": "pip install air-blackbox[full]",
+            "install": "pip install air-blackbox-mcp[full]",
             "note": "GDPR scanning requires the full SDK. Basic scanning still available without it.",
-        }, indent=2)
+        })
 
     try:
         # Write code to temp file for SDK scanner
@@ -630,19 +650,23 @@ async def scan_gdpr(code: str) -> str:
         # Convert dataclass objects to dicts for JSON serialization
         from dataclasses import asdict
         serializable = [asdict(r) if hasattr(r, '__dataclass_fields__') else r for r in result] if isinstance(result, list) else result
-        return json.dumps(serializable, indent=2, default=str)
+        # The SDK returns a list of findings; wrap it so the response can
+        # carry provenance (a bare JSON array has nowhere to put it).
+        if isinstance(serializable, list):
+            serializable = {"findings": serializable}
+        return _sdk_json(serializable)
     except Exception as e:
-        return json.dumps({
+        return _sdk_json({
             "error": str(e),
-            "note": "GDPR scanner failed. Ensure air_blackbox>=1.6.3 is installed.",
-        }, indent=2)
+            "note": "GDPR scanner failed. Check the installed air-blackbox version.",
+        })
 
 
 @mcp.tool()
 async def scan_bias(code: str) -> str:
     """Scan code for AI bias and fairness issues.
 
-    Available only with full air-blackbox SDK (pip install air-blackbox[full]).
+    Available only with full air-blackbox SDK (pip install air-blackbox-mcp[full]).
 
     Checks for:
     - Disparate impact risks in decision logic
@@ -654,11 +678,11 @@ async def scan_bias(code: str) -> str:
     try:
         from air_blackbox.compliance.bias_scanner import scan_bias as _scan_bias_sdk
     except ImportError:
-        return json.dumps({
+        return _sdk_json({
             "error": "air_blackbox SDK not installed",
-            "install": "pip install air-blackbox[full]",
+            "install": "pip install air-blackbox-mcp[full]",
             "note": "Bias scanning requires the full SDK. Basic scanning still available without it.",
-        }, indent=2)
+        })
 
     try:
         # Write code to temp file for SDK scanner
@@ -670,19 +694,21 @@ async def scan_bias(code: str) -> str:
             result = _scan_bias_sdk(temp_path)
         finally:
             os.unlink(temp_path)
-        return json.dumps(result, indent=2)
+        if isinstance(result, list):
+            result = {"findings": result}
+        return _sdk_json(result)
     except Exception as e:
-        return json.dumps({
+        return _sdk_json({
             "error": str(e),
-            "note": "Bias scanner failed. Ensure air_blackbox>=1.6.3 is installed.",
-        }, indent=2)
+            "note": "Bias scanner failed. Check the installed air-blackbox version.",
+        })
 
 
 @mcp.tool()
 async def validate_action(action_type: str, tool_name: str, risk_level: str = "") -> str:
     """Validate an agent action before execution (Article 14 compliance).
 
-    Available only with full air-blackbox SDK (pip install air-blackbox[full]).
+    Available only with full air-blackbox SDK (pip install air-blackbox-mcp[full]).
 
     Use this to check if an action should be executed, requires approval,
     or should be blocked. Implements ConsentGate logic.
@@ -698,11 +724,11 @@ async def validate_action(action_type: str, tool_name: str, risk_level: str = ""
     try:
         from air_blackbox.validate import validate_action as _validate_sdk
     except ImportError:
-        return json.dumps({
+        return _sdk_json({
             "error": "air_blackbox SDK not installed",
-            "install": "pip install air-blackbox[full]",
+            "install": "pip install air-blackbox-mcp[full]",
             "note": "Action validation requires the full SDK.",
-        }, indent=2)
+        })
 
     try:
         result = _validate_sdk(
@@ -710,19 +736,19 @@ async def validate_action(action_type: str, tool_name: str, risk_level: str = ""
             tool_name=tool_name,
             risk_level=risk_level or None
         )
-        return json.dumps(result, indent=2)
+        return _sdk_json(result if isinstance(result, dict) else {"result": result})
     except Exception as e:
-        return json.dumps({
+        return _sdk_json({
             "error": str(e),
             "note": "Validation failed. Check tool_name and action_type.",
-        }, indent=2)
+        })
 
 
 @mcp.tool()
 async def compliance_history(action: str = "list") -> str:
     """View past scan results, trends, and compliance history.
 
-    Available only with full air-blackbox SDK (pip install air-blackbox[full]).
+    Available only with full air-blackbox SDK (pip install air-blackbox-mcp[full]).
 
     Actions:
         'list': Show recent scans
@@ -739,11 +765,11 @@ async def compliance_history(action: str = "list") -> str:
             get_latest_score,
         )
     except ImportError:
-        return json.dumps({
+        return _sdk_json({
             "error": "air_blackbox SDK not installed",
-            "install": "pip install air-blackbox[full]",
+            "install": "pip install air-blackbox-mcp[full]",
             "note": "History tracking requires the full SDK.",
-        }, indent=2)
+        })
 
     try:
         if action.lower() == "trend":
@@ -760,10 +786,10 @@ async def compliance_history(action: str = "list") -> str:
         else:  # list (default)
             result = get_history()
 
-        return json.dumps(result, indent=2)
+        return _sdk_json(result if isinstance(result, dict) else {"history": result})
     except Exception as e:
-        return json.dumps({
+        return _sdk_json({
             "error": str(e),
             "note": "History lookup failed. Ensure scans have been run.",
-        }, indent=2)
+        })
 
