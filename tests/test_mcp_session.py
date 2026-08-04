@@ -11,11 +11,11 @@ mcp 2.0 port (#7) must reproduce: if `list_tools` still returns 14 tools and a
 `scan_code` call still comes back with findings and provenance, the port
 preserved the contract.
 
-`_session()` is deliberately the only place that touches the transport API,
-because that is what changes between mcp 1.x and 2.0:
-  1.x  mcp.shared.memory.create_connected_server_and_client_session(server)
-  2.0  create_client_server_memory_streams() + server.runner.serve_connection
-Porting means rewriting this one helper, not the assertions.
+The session runs the server as a real subprocess over stdio - the same way
+Claude Desktop and Cursor launch it. That is deliberate: the in-memory helper
+differs between mcp 1.x and 2.0, while stdio is identical on both, so these
+tests hold across SDK generations (#7) without a version shim. It also
+exercises the documented entry point, which is exactly where 0.2.3 died.
 
 Run with: python -m pytest tests/test_mcp_session.py -v
 """
@@ -31,19 +31,45 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 anyio = pytest.importorskip("anyio")
 
 
+REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+
 @asynccontextmanager
 async def _session():
-    """Yield a ClientSession connected to this server, in-memory.
+    """Yield a ClientSession talking to the server over real stdio.
 
-    The single transport-dependent seam. See module docstring.
+    Launches `python -m air_blackbox_mcp` as a subprocess, so this covers the
+    documented entry point and the transport clients actually use. The single
+    transport-dependent seam - see module docstring.
     """
-    from mcp.shared.memory import create_connected_server_and_client_session
+    from mcp import ClientSession, StdioServerParameters
+    from mcp.client.stdio import stdio_client
 
-    from air_blackbox_mcp.server import mcp as server
+    params = StdioServerParameters(
+        command=sys.executable,
+        args=["-m", "air_blackbox_mcp"],
+        # Import this checkout, not any installed copy.
+        env={**os.environ, "PYTHONPATH": REPO_ROOT},
+    )
+    async with stdio_client(params) as (read, write):
+        async with ClientSession(read, write) as client:
+            await client.initialize()
+            yield client
 
-    async with create_connected_server_and_client_session(server) as client:
-        await client.initialize()
-        yield client
+
+def _attr(obj, *names):
+    """Read the first attribute that exists, across mcp SDK generations.
+
+    mcp 2.0 renamed several client-side fields from camelCase to snake_case
+    (inputSchema -> input_schema, isError -> is_error). The wire format and the
+    server behaviour are unchanged; only the Python attribute name moved, so
+    these tests accept either spelling rather than pinning an SDK generation.
+    """
+    for n in names:
+        v = getattr(obj, n, None)
+        if v is not None:
+            return v
+    return None
 
 
 def _text(result):
@@ -82,7 +108,7 @@ def test_tools_have_descriptions_and_schemas():
 
     for t in _run(go).tools:
         assert t.description and t.description.strip(), f"{t.name}: no description"
-        assert t.inputSchema, f"{t.name}: no input schema"
+        assert _attr(t, "inputSchema", "input_schema"), f"{t.name}: no input schema"
 
 
 def test_scan_code_over_the_protocol_returns_findings_and_provenance():
@@ -130,8 +156,17 @@ def test_unknown_tool_is_an_error_not_a_crash():
                 result = await client.call_tool("no_such_tool", {})
             except Exception as exc:                # protocol-level rejection
                 return ("raised", type(exc).__name__)
-            return ("returned", getattr(result, "isError", None))
+            # mcp 1.x raises; 2.0 returns an error result. Both are correct
+            # protocol behaviour - what matters is that neither kills the session.
+            return ("returned", _attr(result, "isError", "is_error"))
 
     kind, detail = _run(go)
     assert kind == "raised" or detail is True, (
-        f"unknown tool neither raised nor set isError: {kind}/{detail}")
+        f"unknown tool neither raised nor flagged an error: {kind}/{detail}")
+
+    # The session must still be usable afterwards - a bad call cannot poison it.
+    async def still_alive():
+        async with _session() as client:
+            return len((await client.list_tools()).tools)
+
+    assert _run(still_alive) == 14

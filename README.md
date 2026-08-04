@@ -54,37 +54,36 @@ major cap means a 2.x SDK cannot silently change your findings.
 
 ## MCP SDK compatibility (mcp 2.0)
 
-**This package requires `mcp>=1.0,<2`.** That upper bound is deliberate, and
-worth understanding if you manage MCP servers in a shared environment.
+**This package supports both MCP SDK generations — `mcp>=1.0`, no upper bound.**
 
-mcp 2.0 removed `mcp.server.fastmcp`, the module this server is built on. An
-unpinned install resolves to 2.x and the server cannot start at all:
+mcp 2.0 removed `mcp.server.fastmcp` and replaced `FastMCP` with `MCPServer`.
+Rather than pin away from it, the server detects which generation is installed
+and binds to the right class, so it runs on 1.x and 2.x alike:
+
+| installed | server class |
+|---|---|
+| `mcp` 1.x | `FastMCP` |
+| `mcp` 2.x | `MCPServer` |
+
+Both paths are covered by tests that launch `python -m air_blackbox_mcp` as a
+real subprocess and drive it over stdio — the same way Claude Desktop and
+Cursor do — and the full suite runs green on both.
+
+**If you are on 0.2.3, upgrade.** That version declared an unpinned
+`mcp>=1.0.0`, so once mcp 2.0 shipped, every fresh install produced a server
+that died on import:
 
 ```
 ModuleNotFoundError: No module named 'mcp.server.fastmcp'
 ```
 
-Version **0.2.3 shipped with that break** — it declared `mcp>=1.0.0`, so every
-fresh install after mcp 2.0 landed produced a server that died on import. Fixed
-in 0.2.4. If you are on 0.2.3, upgrade:
-
 ```bash
 pip install --upgrade air-blackbox-mcp
 ```
 
-**What this means for you:** in an environment that also holds a server built
-for mcp 2.x, pip will not be able to satisfy both at once. Install this server
-in its own virtualenv (which is how Claude Desktop and Cursor run it anyway)
-until the migration below lands.
-
-**The migration path.** mcp 2.0 replaces `FastMCP` with `MCPServer`
-(`from mcp.server import MCPServer`), which keeps the decorator API this server
-uses — `@mcp.tool()` and `custom_route()` both exist on it — so the port is
-mostly mechanical. The separate [`fastmcp`](https://pypi.org/project/fastmcp/)
-package is the other option. We have not shipped either yet, because moving a
-compliance tool onto a new server API without coverage of the real transport is
-how you get a second silent breakage; the cap stays until the port is tested.
-Tracked in [#7](https://github.com/airblackbox/air-blackbox-mcp/issues/7).
+0.2.4 fixed it by capping at `mcp<2`; 0.3.0 removes the cap entirely, so this
+server no longer conflicts with anything built for mcp 2.x sharing the same
+environment.
 
 ## Claude Desktop Setup
 

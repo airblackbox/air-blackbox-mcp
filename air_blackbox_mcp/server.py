@@ -25,7 +25,17 @@ import json
 import subprocess
 import tempfile
 import os
-from mcp.server.fastmcp import FastMCP
+# MCP SDK compatibility. mcp 2.0 removed mcp.server.fastmcp and replaced
+# FastMCP with MCPServer, which keeps the same decorator API this server uses
+# (.tool() and .run()). Supporting both means the package does not have to cap
+# `mcp` at <2 - a cap that shipped 0.2.3 unusable when 2.0 landed - and does not
+# force existing 1.x users to upgrade in lockstep. See issue #7.
+try:                                          # mcp >= 2
+    from mcp.server import MCPServer as _MCPServerImpl
+    MCP_SDK_GENERATION = 2
+except ImportError:                           # mcp 1.x
+    from mcp.server.fastmcp import FastMCP as _MCPServerImpl
+    MCP_SDK_GENERATION = 1
 
 from air_blackbox_mcp import __version__
 from air_blackbox_mcp.provenance import ENGINE_SDK, stamp
@@ -47,7 +57,7 @@ def _sdk_json(result: dict) -> str:
     """
     return json.dumps(stamp(result, ENGINE_SDK), indent=2, default=str)
 
-mcp = FastMCP(
+mcp = _MCPServerImpl(
     "air-blackbox",
     instructions="EU AI Act compliance scanner with GDPR and bias detection - scan, analyze, remediate, and protect AI agent code. 14 tools across scanning, analysis, remediation, and documentation.",
 )
