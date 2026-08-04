@@ -36,9 +36,20 @@ def test_server_module_imports():
     assert server.mcp is not None
 
 
-def test_fastmcp_import_path_exists():
-    """Pin the specific breakage: mcp 2.0 removed this module."""
-    import mcp.server.fastmcp  # noqa: F401
+def test_server_binds_to_an_mcp_sdk_generation():
+    """The compat shim must resolve to a real server class on either SDK.
+
+    Replaces an earlier test that asserted `mcp.server.fastmcp` exists. That
+    was the right guard while the package pinned mcp<2, but the pin is gone
+    (#7): server.py now supports FastMCP on 1.x and MCPServer on 2.x. What
+    must hold is that SOME generation resolved and the server object is real -
+    asserting a specific module would re-pin us to one SDK by the back door.
+    """
+    import air_blackbox_mcp.server as server
+
+    assert server.MCP_SDK_GENERATION in (1, 2)
+    assert server.mcp.__class__.__name__ in ("FastMCP", "MCPServer")
+    assert hasattr(server.mcp, "tool") and hasattr(server.mcp, "run")
 
 
 @pytest.mark.parametrize("tool_name,args", [
