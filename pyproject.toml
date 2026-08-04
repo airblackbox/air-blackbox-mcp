@@ -15,7 +15,7 @@ only-include = [
 
 [project]
 name = "air-blackbox-mcp"
-version = "0.2.3"
+version = "0.2.4"
 description = "MCP server for EU AI Act compliance scanning with GDPR and bias detection - scan, analyze, remediate, and protect AI agent code"
 readme = "README.md"
 license = {text = "Apache-2.0"}
@@ -34,7 +34,11 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-full = ["air-blackbox>=1.6.0"]
+# Floor raised from >=1.6.0: that span reached 1.13 with no way to tell which
+# rules produced a Tier 5 result. Results now record sdk_version, and the floor
+# is the version this package is actually tested against. Major cap so a 2.x
+# SDK cannot silently change findings.
+full = ["air-blackbox>=1.13,<2"]
 ollama = ["ollama"]
 
 [project.urls]

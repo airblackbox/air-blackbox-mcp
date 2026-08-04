@@ -8,6 +8,8 @@ import os
 import re
 from dataclasses import dataclass
 
+from air_blackbox_mcp.provenance import stamp
+
 
 # ── Framework detection ──────────────────────────────────────────
 
@@ -81,7 +83,7 @@ def scan_code(code: str) -> dict:
     warnings = sum(1 for f in findings if f.status == "warn")
     failing = sum(1 for f in findings if f.status == "fail")
 
-    return {
+    return stamp({
         "frameworks": frameworks,
         "trust_layer_detected": has_trust,
         "findings": [_to_dict(f) for f in findings],
@@ -92,13 +94,13 @@ def scan_code(code: str) -> dict:
             "failing": failing,
             "score": f"{passing}/{total}",
         },
-    }
+    })
 
 
 def scan_file(file_path: str) -> dict:
     """Read and scan a single Python file."""
     if not os.path.exists(file_path):
-        return {"error": f"File not found: {file_path}"}
+        return stamp({"error": f"File not found: {file_path}"})
     with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
         code = f.read()
     result = scan_code(code)
@@ -110,7 +112,7 @@ def scan_file(file_path: str) -> dict:
 def scan_project(directory: str) -> dict:
     """Recursively scan all .py files in a directory."""
     if not os.path.isdir(directory):
-        return {"error": f"Directory not found: {directory}"}
+        return stamp({"error": f"Directory not found: {directory}"})
 
     skip_dirs = {
         "node_modules", ".git", "__pycache__", ".venv", "venv",
@@ -127,7 +129,8 @@ def scan_project(directory: str) -> dict:
                 py_files.append(os.path.join(root, fname))
 
     if not py_files:
-        return {"error": f"No Python files found in {directory}", "files_scanned": 0}
+        return stamp({"error": f"No Python files found in {directory}",
+                      "files_scanned": 0})
 
     # Scan each file individually, then aggregate. (Merging all files into
     # one blob lets a try/except in ANY file satisfy the error-handling
@@ -173,7 +176,7 @@ def scan_project(directory: str) -> dict:
 
     total = len(findings)
     passing = sum(1 for f in findings if f["status"] == "pass")
-    result = {
+    result = stamp({
         "frameworks": sorted(frameworks),
         "trust_layer_detected": trust_detected,
         "findings": findings,
@@ -184,7 +187,7 @@ def scan_project(directory: str) -> dict:
             "failing": sum(1 for f in findings if f["status"] == "fail"),
             "score": f"{passing}/{total}",
         },
-    }
+    })
     result["directory"] = directory
     result["files_scanned"] = len(file_results)
     result["files"] = file_results[:20]  # Cap at 20 to keep response size manageable
@@ -514,13 +517,13 @@ def check_injection(text: str) -> dict:
             max_weight = max(max_weight, weight)
 
     blocked = max_weight >= 0.7
-    return {
+    return stamp({
         "detected_patterns": detected,
         "confidence": round(max_weight, 2),
         "would_block": blocked,
         "pattern_count": len(detected),
         "verdict": "BLOCKED" if blocked else "SUSPICIOUS" if detected else "CLEAN",
-    }
+    })
 
 
 # ── Risk classification ──────────────────────────────────────────
@@ -554,18 +557,18 @@ def classify_risk(tool_name: str) -> dict:
             # Match whole tokens (or token sequences for multi-word
             # keywords like "os.system"), never substrings.
             if "_" + "_".join(kw_tokens) + "_" in joined:
-                return {
+                return stamp({
                     "tool": tool_name,
                     "risk_level": level,
                     "matched_keyword": kw,
                     "recommendation": _risk_recommendation(level),
-                }
-    return {
+                })
+    return stamp({
         "tool": tool_name,
         "risk_level": "UNKNOWN",
         "matched_keyword": None,
         "recommendation": "Review this tool manually to assess risk level.",
-    }
+    })
 
 
 def _risk_recommendation(level: str) -> str:
