@@ -1,0 +1,122 @@
+name: Release
+
+# Publishing is gated on the built artifact actually working.
+#
+# 0.2.3 shipped to PyPI unusable: an unpinned mcp>=1.0.0 resolved to mcp 2.0,
+# which removed mcp.server.fastmcp, so `python -m air_blackbox_mcp` died on
+# import for every new user. Nothing caught it, because nothing between "build"
+# and "upload" ever installed the artifact and tried to run it.
+#
+# So the verify job below installs the built WHEEL into a clean venv and
+# imports the real entry point. Testing the source tree would not have caught
+# it - the source tree resolves imports from the repo, not from the
+# dependencies the artifact actually declares.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:      # build + verify with no publish, for a dry run
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install build
+      - run: python -m build
+      - name: Version must match the release tag
+        # Guards the near-miss where a stale checkout built an old version:
+        # tagging v0.2.4 and uploading 0.2.2 should fail loudly, not silently.
+        if: github.event_name == 'release'
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          BUILT=$(ls dist/*.tar.gz | sed -E 's/.*-([0-9][^-]*)\.tar\.gz/\1/')
+          echo "tag=$TAG built=$BUILT"
+          [ "$TAG" = "$BUILT" ] || { echo "::error::tag $TAG != built $BUILT"; exit 1; }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  verify:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.12"]   # requires-python floor and current
+    steps:
+      - uses: actions/checkout@v4          # for the test suite only
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Install the built wheel into a clean venv
+        run: |
+          python -m venv "$RUNNER_TEMP/venv"
+          "$RUNNER_TEMP/venv/bin/pip" install --upgrade pip
+          "$RUNNER_TEMP/venv/bin/pip" install dist/*.whl
+
+      - name: Entry point must import (the check that was missing)
+        # Run from a neutral directory so the repo's source tree cannot satisfy
+        # the import - this must exercise the installed artifact.
+        working-directory: ${{ runner.temp }}
+        run: |
+          "$RUNNER_TEMP/venv/bin/python" -c "import air_blackbox_mcp.server; print('server OK')"
+          "$RUNNER_TEMP/venv/bin/python" -c "import air_blackbox_mcp.__main__; print('__main__ OK')"
+          "$RUNNER_TEMP/venv/bin/python" - <<'PY'
+          import mcp.server.fastmcp  # the exact module mcp 2.0 removed
+          print("mcp.server.fastmcp present")
+          PY
+
+      - name: Tools must return provenance
+        working-directory: ${{ runner.temp }}
+        run: |
+          "$RUNNER_TEMP/venv/bin/python" - <<'PY'
+          import asyncio, inspect, json
+          import air_blackbox_mcp.server as S
+
+          def call(tool, *a):
+              fn = getattr(tool, "fn", tool)
+              out = fn(*a)
+              return asyncio.run(out) if inspect.isawaitable(out) else out
+
+          for name in ("scan_code", "check_injection", "classify_risk"):
+              args = ("import openai\n",) if name == "scan_code" else ("x",)
+              prov = json.loads(call(getattr(S, name), *args)).get("provenance")
+              assert prov, f"{name} shipped without provenance"
+              assert prov["scanner_version"], name
+          print("provenance OK")
+          PY
+
+      - name: Test suite against the installed artifact
+        # Copied out of the checkout so the tests' sys.path shim cannot reach
+        # the source package; imports fall through to the installed wheel.
+        run: |
+          cp -r tests "$RUNNER_TEMP/t"
+          "$RUNNER_TEMP/venv/bin/pip" install pytest
+          cd "$RUNNER_TEMP" && "$RUNNER_TEMP/venv/bin/python" -m pytest t -q
+
+  publish:
+    needs: verify
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write        # PyPI Trusted Publishing - no API token stored
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
