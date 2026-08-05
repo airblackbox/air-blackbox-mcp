@@ -71,6 +71,10 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.10", "3.12"]   # requires-python floor and current
+        # The package supports both MCP SDK generations via the shim in
+        # server.py (FastMCP on 1.x, MCPServer on 2.x), so the gate verifies
+        # the artifact on both - a release must not break either kind of user.
+        mcp-generation: ["<2", ">=2"]
     steps:
       - uses: actions/checkout@v4          # for the test suite only
       - uses: actions/setup-python@v5
@@ -86,6 +90,8 @@ jobs:
           python -m venv "$RUNNER_TEMP/venv"
           "$RUNNER_TEMP/venv/bin/pip" install --upgrade pip
           "$RUNNER_TEMP/venv/bin/pip" install dist/*.whl
+          "$RUNNER_TEMP/venv/bin/pip" install 'mcp${{ matrix.mcp-generation }}'
+
 
       - name: Entry point must import (the check that was missing)
         # Run from a neutral directory so the repo's source tree cannot satisfy
@@ -95,8 +101,15 @@ jobs:
           "$RUNNER_TEMP/venv/bin/python" -c "import air_blackbox_mcp.server; print('server OK')"
           "$RUNNER_TEMP/venv/bin/python" -c "import air_blackbox_mcp.__main__; print('__main__ OK')"
           "$RUNNER_TEMP/venv/bin/python" - <<'PY'
-          import mcp.server.fastmcp  # the exact module mcp 2.0 removed
-          print("mcp.server.fastmcp present")
+          # Generation-agnostic: the first v0.3.0 release run failed HERE, on a
+          # leftover `import mcp.server.fastmcp` assertion written when the
+          # package pinned mcp<2. The shim had already made both generations
+          # valid; the gate just hadn't been told. Assert what actually matters:
+          # the server bound to a real class on whichever SDK is installed.
+          import air_blackbox_mcp.server as s
+          assert s.MCP_SDK_GENERATION in (1, 2), s.MCP_SDK_GENERATION
+          assert s.mcp.__class__.__name__ in ("FastMCP", "MCPServer")
+          print(f"bound: generation {s.MCP_SDK_GENERATION} ({s.mcp.__class__.__name__})")
           PY
 
       - name: Tools must return provenance
