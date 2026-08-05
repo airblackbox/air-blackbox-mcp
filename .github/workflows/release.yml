@@ -39,6 +39,26 @@ jobs:
           BUILT=$(ls dist/*.tar.gz | sed -E 's/.*-([0-9][^-]*)\.tar\.gz/\1/')
           echo "tag=$TAG built=$BUILT"
           [ "$TAG" = "$BUILT" ] || { echo "::error::tag $TAG != built $BUILT"; exit 1; }
+      - name: sdist must contain every test file in the repo
+        # The sdist previously named one test file explicitly, so the three
+        # added later were silently absent and anyone building from source
+        # could not run the suite. Compare against the checkout rather than a
+        # hardcoded list, so a newly added test is covered automatically.
+        run: |
+          python - <<'PY'
+          import glob, os, sys, tarfile
+          repo = {os.path.basename(p) for p in glob.glob("tests/*.py")}
+          sdist = glob.glob("dist/*.tar.gz")[0]
+          with tarfile.open(sdist) as t:
+              shipped = {os.path.basename(n) for n in t.getnames()
+                         if "/tests/" in n and n.endswith(".py")}
+          missing = sorted(repo - shipped)
+          for m in missing:
+              print(f"::error::tests/{m} is in the repo but missing from the sdist")
+          print(f"repo={len(repo)} shipped={len(shipped)}")
+          sys.exit(1 if missing else 0)
+          PY
+
       - uses: actions/upload-artifact@v4
         with:
           name: dist
