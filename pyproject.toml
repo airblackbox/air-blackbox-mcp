@@ -7,7 +7,11 @@ build-backend = "hatchling.build"
 # and internal docs out of the PyPI tarball.
 only-include = [
     "air_blackbox_mcp",
-    "tests/test_scanner.py",
+    # Whole directory, not a named file: listing tests individually meant the
+    # three added since (provenance, server imports, MCP session) were silently
+    # absent from the sdist, so anyone building from source could not run the
+    # suite. The release workflow now asserts parity.
+    "tests",
     "README.md",
     "LICENSE",
     "server.json",
