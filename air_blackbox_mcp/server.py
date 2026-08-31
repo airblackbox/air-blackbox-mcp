@@ -57,10 +57,16 @@ def _sdk_json(result: dict) -> str:
     """
     return json.dumps(stamp(result, ENGINE_SDK), indent=2, default=str)
 
-mcp = _MCPServerImpl(
-    "air-blackbox",
-    instructions="EU AI Act compliance scanner with GDPR and bias detection - scan, analyze, remediate, and protect AI agent code. 14 tools across scanning, analysis, remediation, and documentation.",
-)
+# FastMCP 1.x has no version parameter and reports the mcp SDK's own version
+# in serverInfo; MCPServer 2.x accepts one but defaults to "". Pass ours where
+# the constructor allows it so MCP clients display the real package version.
+_server_kwargs = {
+    "instructions": "EU AI Act compliance scanner with GDPR and bias detection - scan, analyze, remediate, and protect AI agent code. 14 tools across scanning, analysis, remediation, and documentation.",
+}
+if MCP_SDK_GENERATION >= 2:
+    _server_kwargs["version"] = __version__
+
+mcp = _MCPServerImpl("air-blackbox", **_server_kwargs)
 
 
 # ==============================================================================
