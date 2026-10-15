@@ -66,7 +66,13 @@ def test_tool_json_carries_provenance(tool_name, args):
     payload = json.loads(_call(getattr(server, tool_name), *args))
     prov = payload.get("provenance")
     assert prov, f"{tool_name} returned JSON without provenance"
-    assert prov["engine"] == ENGINE_BUILTIN
+    # scan_code/scan_file run the SDK when it is installed; the other tools
+    # are always built in. Either way the result must say which ran.
+    from air_blackbox_mcp import sdk_scanner
+    from air_blackbox_mcp.provenance import ENGINE_SDK
+    sdk_tools = {"scan_code", "scan_file", "scan_project"}
+    expected = ENGINE_SDK if (tool_name in sdk_tools and sdk_scanner.available()) else ENGINE_BUILTIN
+    assert prov["engine"] == expected
     assert prov["scanner_version"]
     assert prov["ruleset_version"]
 
