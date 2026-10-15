@@ -8,18 +8,22 @@ AIR Blackbox MCP Server - EU AI Act compliance scanning for AI agents.
   Tier 4 - Docs:        explain_article, generate_compliance_report
   Tier 5 - New SDK:     scan_gdpr, scan_bias, validate_action, compliance_history
 
-Which engine runs is a fixed property of each tool, NOT a runtime fallback:
+Which engine runs is decided once, at import, by what is installed:
 
-  Tiers 1-4 always run the built-in rule-based scanner (air_blackbox_mcp.
-  scanner), whether or not the full SDK is installed.
+  The scanning tools (scan_code, scan_file, scan_project, and the rule-based
+  part of analyze_with_model) run the full air-blackbox SDK when it is
+  installed (pip install air-blackbox-mcp[full]): every check the CLI has,
+  in Python, Jupyter notebooks, TypeScript, JavaScript, Java and Kotlin, with
+  the same verdict the CLI gives the same code. Without the SDK they run the
+  built-in rule-based scanner (air_blackbox_mcp.scanner): Python only, a
+  smaller rule set.
 
-  Tier 5 always runs the full air-blackbox SDK, and returns an explicit error
-  if it is not installed (pip install air-blackbox-mcp[full]).
+  check_injection and classify_risk are always built in. Tier 5 always runs
+  the SDK and returns an explicit error if it is not installed.
 
-So a given tool's results come from the same engine on every install. Every
-machine-readable result carries a `provenance` block naming that engine, its
-version, and a content hash of the active rule set, so two reports can be
-compared with confidence. See provenance.py.
+Every machine-readable result carries a `provenance` block naming the engine
+that produced it, its version, and a content hash of the active rule set, so
+two reports can be compared with confidence. See provenance.py.
 """
 import json
 import subprocess
@@ -40,13 +44,24 @@ except ImportError:                           # mcp 1.x
 from air_blackbox_mcp import __version__
 from air_blackbox_mcp.provenance import ENGINE_SDK, stamp
 from air_blackbox_mcp.scanner import (
-    scan_code as _scan_code,
-    scan_file as _scan_file,
-    scan_project as _scan_project,
     check_injection as _check_injection,
     classify_risk as _classify_risk,
     detect_framework,
 )
+from air_blackbox_mcp import sdk_scanner
+
+if sdk_scanner.available():
+    from air_blackbox_mcp.sdk_scanner import (
+        scan_code as _scan_code,
+        scan_file as _scan_file,
+        scan_project as _scan_project,
+    )
+else:
+    from air_blackbox_mcp.scanner import (
+        scan_code as _scan_code,
+        scan_file as _scan_file,
+        scan_project as _scan_project,
+    )
 
 
 def _sdk_json(result: dict) -> str:
@@ -74,11 +89,18 @@ mcp = _MCPServerImpl("air-blackbox", **_server_kwargs)
 # ==============================================================================
 
 @mcp.tool()
-async def scan_code(code: str) -> str:
-    """Scan Python AI agent code for EU AI Act compliance (Articles 9-15).
+async def scan_code(code: str, language: str = "") -> str:
+    """Scan AI agent code for EU AI Act compliance (Articles 9-15).
 
-    Detects frameworks (LangChain, CrewAI, AutoGen, OpenAI, Haystack, LlamaIndex),
-    checks for trust layer presence, and evaluates compliance across 6 articles:
+    Accepts Python, Jupyter notebook JSON, TypeScript, JavaScript, Java or
+    Kotlin when the air-blackbox SDK is installed (pip install
+    air-blackbox-mcp[full]); the language is detected from the code, or pass
+    `language` to state it. Without the SDK, the built-in scanner reads
+    Python only.
+
+    Detects frameworks (LangChain, CrewAI, AutoGen, OpenAI, Haystack, LlamaIndex,
+    and their npm/JVM counterparts), checks for trust layer presence, and
+    evaluates compliance across 6 articles:
     - Art 9: Risk Management (error handling, fallbacks)
     - Art 10: Data Governance (input validation, PII handling)
     - Art 11: Technical Documentation (docstrings, type hints)
@@ -88,16 +110,21 @@ async def scan_code(code: str) -> str:
 
     Returns findings with severity, fix recommendations, and compliance score.
     """
-    result = _scan_code(code)
+    if language and sdk_scanner.available():
+        result = _scan_code(code, language=language)
+    else:
+        result = _scan_code(code)
     return json.dumps(result, indent=2)
 
 
 @mcp.tool()
 async def scan_file(file_path: str) -> str:
-    """Scan a single Python file for EU AI Act compliance.
+    """Scan a single source file for EU AI Act compliance.
 
-    Reads the file, detects framework and trust layer, then runs all
-    compliance checks. Returns line count, findings, and score.
+    Python, .ipynb, TypeScript, JavaScript, Java or Kotlin with the SDK
+    installed; Python only without it. Reads the file, detects framework and
+    trust layer, then runs all compliance checks. Returns line count,
+    findings, and score.
     """
     result = _scan_file(file_path)
     return json.dumps(result, indent=2)
@@ -105,11 +132,14 @@ async def scan_file(file_path: str) -> str:
 
 @mcp.tool()
 async def scan_project(directory: str) -> str:
-    """Recursively scan all Python files in a project directory.
+    """Recursively scan all source files in a project directory.
 
-    Walks the directory tree (skipping node_modules, .git, __pycache__, etc.),
-    reads all .py files, and runs a combined compliance analysis.
-    Returns per-file info, aggregate findings, and project-level score.
+    Walks the directory tree (skipping node_modules, .git, build output, etc.)
+    and runs a combined compliance analysis. With the SDK installed this
+    reads Python, notebooks, TypeScript, JavaScript, Java and Kotlin and
+    gives the verdict `air-blackbox comply --scan` gives; without it, .py
+    files only. Returns per-file info, aggregate findings, and project-level
+    score.
     """
     result = _scan_project(directory)
     return json.dumps(result, indent=2)

@@ -16,10 +16,10 @@ Every machine-readable result this server returns therefore carries a
       "sdk_version": null                 # the SDK, when the SDK produced it
     }
 
-Note on `engine`: it is a fixed property of each tool, not a runtime fallback.
-The Tier 1-4 tools always run the built-in rule-based scanner; the Tier 5
-tools always run the full air-blackbox SDK (or return an explicit error if it
-is not installed). There is no silent switch between them.
+Note on `engine`: the scanning tools run the SDK when it is installed and
+the built-in rules when it is not, decided once at import; check_injection
+and classify_risk are always built in; Tier 5 is always the SDK. Which one
+ran is never implicit: it is this field.
 
 Note on `sdk_version`: it names the SDK that *produced this result*, so it is
 null for built-in results even when the SDK happens to be installed. Reporting
