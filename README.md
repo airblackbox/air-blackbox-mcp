@@ -13,9 +13,9 @@ Unlike other compliance scanners that only report problems, AIR Blackbox also **
 
 | Tier | Tool | What it does | Requires SDK |
 |------|------|-------------|---|
-| Scanning | `scan_code` | Scan Python code string for all 6 EU AI Act articles | No |
-| Scanning | `scan_file` | Read and scan a single Python file | No |
-| Scanning | `scan_project` | Recursively scan all .py files in a directory | No |
+| Scanning | `scan_code` | Scan a code string for all 6 EU AI Act articles (Python, notebooks, TypeScript, JavaScript, Java, Kotlin with the SDK; Python without) | Recommended |
+| Scanning | `scan_file` | Read and scan a single source file | Recommended |
+| Scanning | `scan_project` | Recursively scan a project directory | Recommended |
 | Analysis | `analyze_with_model` | Deep analysis via local fine-tuned model (Ollama) | No |
 | Analysis | `check_injection` | Detect prompt injection attacks (15 patterns) | No |
 | Analysis | `classify_risk` | Classify tools by EU AI Act risk level | No |
@@ -34,23 +34,27 @@ LangChain, CrewAI, AutoGen, OpenAI, Haystack, LlamaIndex, Semantic Kernel, Googl
 
 ## Installation
 
-### Basic (10 tools, no SDK features)
-
-```bash
-pip install air-blackbox-mcp
-```
-
-Works standalone with just the lightweight built-in scanner.
-
-### Full (14 tools with GDPR, bias, validation, and history)
+### Recommended (14 tools, every language)
 
 ```bash
 pip install air-blackbox-mcp[full]
 ```
 
-Installs the full `air-blackbox` SDK (`>=1.13,<2`) for advanced compliance
-features. The floor is the version this package is tested against, and the
-major cap means a 2.x SDK cannot silently change your findings.
+Installs the `air-blackbox` SDK (`>=1.17,<2`). The scanning tools then run
+the same engine as the `air-blackbox` CLI and read Python, Jupyter
+notebooks, TypeScript, JavaScript, Java and Kotlin, with the same verdict
+the CLI gives the same code. The floor is the version this package is tested
+against, and the major cap means a 2.x SDK cannot silently change your
+findings.
+
+### Basic (10 tools, Python only)
+
+```bash
+pip install air-blackbox-mcp
+```
+
+Works standalone with the lightweight built-in scanner: Python files only,
+a smaller rule set.
 
 ## MCP SDK compatibility (mcp 2.0)
 
@@ -187,18 +191,21 @@ Other MCP compliance tools only scan. AIR Blackbox:
 
 ## Architecture
 
-**Which engine runs is fixed per tool, not a runtime fallback.** Earlier versions
-of this README described a "try the SDK first, fall back to built-in" pattern.
-That was never what the code did, and it mattered: a reader could not tell
-whether two reports came from the same rules. The actual behavior:
+**Which engine runs is decided once, at import, by what is installed, and
+every result says which one ran.** Until 0.4.0 the scanning tools always used
+the built-in scanner even when the SDK was installed; the two had drifted
+(fewer checks here, Python only, and a hiring-detection bug the SDK had
+fixed), so the same code got different verdicts from the CLI and from Claude.
 
 | Tools | Engine | If the SDK is missing |
 |---|---|---|
-| Tiers 1–4 (`scan_code`, `scan_file`, `scan_project`, `check_injection`, `classify_risk`, …) | Always the built-in rule-based scanner | No effect — these never use the SDK |
+| `scan_code`, `scan_file`, `scan_project` (and the rule-based part of `analyze_with_model`) | The `air-blackbox` SDK when installed, otherwise the built-in rule-based scanner | Built-in scanner: Python only, smaller rule set |
+| `check_injection`, `classify_risk` | Always the built-in rules | No effect |
 | Tier 5 (`scan_gdpr`, `scan_bias`, `validate_action`, `compliance_history`) | Always the full `air-blackbox` SDK | Explicit error telling you to install `[full]` |
 
-So a given tool produces results from the same engine on every install, and
-there is no silent switch between engines.
+The choice is made when the server starts, not per call, and `provenance.engine`
+names it on every result, so two reports are comparable exactly when their
+`engine` and `ruleset_version` match.
 
 ### Result provenance
 

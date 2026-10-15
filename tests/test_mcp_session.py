@@ -128,7 +128,10 @@ def test_scan_code_over_the_protocol_returns_findings_and_provenance():
     assert "openai" in payload["frameworks"]
     prov = payload.get("provenance")
     assert prov, "provenance did not survive the MCP call path"
-    assert prov["engine"] == "builtin-rules"
+    # The server subprocess runs this interpreter, so it sees the same SDK.
+    from air_blackbox_mcp import sdk_scanner
+    expected = "air-blackbox-sdk" if sdk_scanner.available() else "builtin-rules"
+    assert prov["engine"] == expected
     assert prov["scanner_version"] and prov["ruleset_version"]
 
 

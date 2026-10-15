@@ -23,8 +23,13 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install
-        # Base install only: the built-in scanner path is what Tiers 1-4 always
-        # run, and the provenance sweep must pass without the optional SDK.
+        # Base install: the built-in scanner must keep working without the SDK.
         run: pip install -e . pytest
-      - name: Test
+      - name: Test (built-in scanner)
+        run: python -m pytest tests/ -q
+      - name: Install the SDK
+        # The scanning tools switch to the SDK when it is installed; the same
+        # suite must pass on that engine too, plus the SDK-only tests.
+        run: pip install -e ".[full]"
+      - name: Test (SDK scanner)
         run: python -m pytest tests/ -q
